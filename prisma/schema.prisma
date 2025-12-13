@@ -1,0 +1,279 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum JobType {
+  LOKER
+  MAGANG
+}
+
+enum ProductCategory {
+  JASA
+  PRODUK
+}
+
+model User {
+  id                  String   @id @default(cuid())
+  nim                 String   @unique
+  name                String
+  email               String   @unique
+  password            String
+  placeDateOfBirth    String?
+  phoneNumber         String   @unique
+  enrollmentYear      Int?
+  graduationYear      Int?
+  instance            String?
+  position            String?
+  verificationFileUrl String
+  profilePictureUrl   String?
+  refreshToken        String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  verificationStatus VerificationStatus @default(PENDING)
+
+  role           Role            @relation(fields: [roleId], references: [id])
+  roleId         String
+  province       Province        @relation(fields: [provinceId], references: [id])
+  provinceId     String
+  city           City            @relation(fields: [cityId], references: [id])
+  cityId         String
+  faculty        Faculty?        @relation(fields: [facultyId], references: [id])
+  facultyId      String?
+  majors         Majors?         @relation(fields: [majorsId], references: [id])
+  majorsId       String?
+  forums         Forum[]
+  jobs           Job[]
+  collaborations Collaboration[]
+  products       Product[]
+  forumComments  ForumComment[]
+  forumLikes     ForumLike[]
+  news           News[]
+
+  @@index([verificationStatus])
+  @@index([roleId])
+  @@index([provinceId])
+  @@index([cityId])
+  @@index([facultyId])
+  @@index([majorsId])
+  @@index([createdAt])
+}
+
+model Role {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users User[]
+}
+
+model Province {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cities City[]
+  users  User[]
+  jobs   Job[]
+}
+
+model City {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  province   Province @relation(fields: [provinceId], references: [id])
+  provinceId String
+
+  users User[]
+  jobs  Job[]
+}
+
+model Faculty {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users  User[]
+  majors Majors[]
+}
+
+model Majors {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  faculty   Faculty @relation(fields: [facultyId], references: [id])
+  facultyId String
+  users     User[]
+}
+
+model JobField {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobs Job[]
+}
+
+model CollaborationField {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  collaborations Collaboration[]
+}
+
+model Job {
+  id               String   @id @default(cuid())
+  title            String
+  content          String   @db.Text
+  company          String
+  jobType          JobType
+  openFrom         DateTime
+  openUntil        DateTime
+  registrationLink String?
+  imageUrl         String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  postedBy   User     @relation(fields: [postedById], references: [id])
+  postedById String
+  jobField   JobField @relation(fields: [jobFieldId], references: [id])
+  jobFieldId String
+  province   Province @relation(fields: [provinceId], references: [id])
+  provinceId String
+  city       City     @relation(fields: [cityId], references: [id])
+  cityId     String
+
+  @@index([jobType])
+  @@index([provinceId])
+  @@index([cityId])
+  @@index([jobFieldId])
+  @@index([createdAt])
+}
+
+model Collaboration {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  postedBy             User                @relation(fields: [postedById], references: [id])
+  postedById           String
+  collaborationField   CollaborationField? @relation(fields: [collaborationFieldId], references: [id])
+  collaborationFieldId String?
+
+  @@index([collaborationFieldId])
+  @@index([createdAt])
+}
+
+model Product {
+  id          String          @id @default(cuid())
+  name        String
+  description String          @db.Text
+  price       Float
+  category    ProductCategory
+  imageUrl    String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  postedBy   User   @relation(fields: [postedById], references: [id])
+  postedById String
+
+  @@index([category])
+  @@index([price])
+  @@index([postedById])
+  @@index([createdAt])
+}
+
+model Forum {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  postedBy   User   @relation(fields: [postedById], references: [id])
+  postedById String
+
+  comments   ForumComment[]
+  forumLikes ForumLike[]
+
+  @@index([postedById])
+  @@index([createdAt])
+}
+
+model ForumComment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  postedBy   User   @relation(fields: [postedById], references: [id])
+  postedById String
+
+  forum   Forum  @relation(fields: [forumId], references: [id])
+  forumId String
+
+  @@index([forumId])
+  @@index([createdAt])
+}
+
+model ForumLike {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  likedBy   User   @relation(fields: [likedById], references: [id])
+  likedById String
+
+  forum   Forum  @relation(fields: [forumId], references: [id])
+  forumId String
+
+  @@unique([forumId, likedById])
+  @@index([forumId])
+}
+
+model News {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  date      DateTime @default(now())
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  postedBy   User   @relation(fields: [postedById], references: [id])
+  postedById String
+
+  @@index([createdAt])
+  @@index([date])
+}
