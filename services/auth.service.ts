@@ -7,6 +7,7 @@ import {
   signAccessToken,
   signRefreshToken,
   verifyRefreshToken,
+  verifyAccessToken,
 } from "@/lib/auth";
 
 type RegisterData = z.infer<typeof registerSchema>;
@@ -117,11 +118,6 @@ export class AuthService {
       nim: user.nim,
     });
 
-    // Store refresh token in database (hashed is better but basic storage requested/implied for now)
-    // Note: Storing plain tokens is risky. Usually we hash it.
-    // Given the field is `refreshToken` string in schema, we'll store it directly for now as per implied flow,
-    // or we can hash it. Let's start with direct storage to match standard JWT rotation patterns often seen in tutorials,
-    // but a production app should hash this too.
     await prisma.user.update({
       where: { id: user.id },
       data: { refreshToken },
@@ -147,7 +143,6 @@ export class AuthService {
       throw new Error("Invalid refresh token");
     }
 
-    // Rotate tokens
     const newAccessToken = signAccessToken({
       userId: user.id,
       role: user.role.name,
@@ -165,5 +160,37 @@ export class AuthService {
     });
 
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+  }
+
+  static async me(accessToken: string) {
+    const payload = await verifyRefreshToken(accessToken); 
+
+    return await AuthService.getUserFromToken(accessToken);
+  }
+
+  private static async getUserFromToken(token: string) {
+    const payload = await verifyAccessToken(token);
+
+    if (!payload || !payload.userId) {
+      throw new Error("Invalid access token");
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId as string },
+      include: {
+        role: true,
+        province: true,
+        city: true,
+        faculty: true,
+        major: true,
+      },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const { password: _, refreshToken: __, ...userWithoutSensitiveData } = user;
+    return userWithoutSensitiveData;
   }
 }
