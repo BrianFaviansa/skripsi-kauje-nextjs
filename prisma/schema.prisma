@@ -57,7 +57,7 @@ model User {
   cityId         String
   faculty        Faculty?        @relation(fields: [facultyId], references: [id])
   facultyId      String?
-  majors         Majors?         @relation(fields: [majorsId], references: [id])
+  majors         Major?         @relation(fields: [majorsId], references: [id])
   majorsId       String?
   forums         Forum[]
   jobs           Job[]
@@ -116,10 +116,10 @@ model Faculty {
   updatedAt DateTime @updatedAt
 
   users  User[]
-  majors Majors[]
+  majors Major[]
 }
 
-model Majors {
+model Major {
   id        String   @id @default(cuid())
   name      String   @unique
   createdAt DateTime @default(now())
