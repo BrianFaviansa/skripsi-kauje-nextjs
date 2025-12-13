@@ -37,8 +37,8 @@ model User {
   password            String
   placeDateOfBirth    String?
   phoneNumber         String   @unique
-  enrollmentYear      Int?
-  graduationYear      Int?
+  enrollmentYear      Int
+  graduationYear      Int
   instance            String?
   position            String?
   verificationFileUrl String
@@ -57,8 +57,8 @@ model User {
   cityId         String
   faculty        Faculty?        @relation(fields: [facultyId], references: [id])
   facultyId      String?
-  majors         Major?         @relation(fields: [majorsId], references: [id])
-  majorsId       String?
+  major          Major?         @relation(fields: [majorId], references: [id])
+  majorId       String?
   forums         Forum[]
   jobs           Job[]
   collaborations Collaboration[]
@@ -72,7 +72,7 @@ model User {
   @@index([provinceId])
   @@index([cityId])
   @@index([facultyId])
-  @@index([majorsId])
+  @@index([majorId])
   @@index([createdAt])
 }
 

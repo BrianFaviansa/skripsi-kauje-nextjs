@@ -22,6 +22,8 @@ export class AuthService {
       roleId,
       provinceId,
       cityId,
+      facultyId,
+      majorId,
       ...rest
     } = data;
 
@@ -39,7 +41,31 @@ export class AuthService {
         throw new Error("Phone number already registered");
     }
 
+    const city = await prisma.city.findUnique({
+      where: { id: cityId },
+    });
+
+    if (!city) {
+      throw new Error("City not found");
+    }
+
+    if (city.provinceId !== provinceId) {
+      throw new Error("City does not belong to the selected Province");
+    }
+
     const hashedPassword = await hashPassword(password);
+
+    let finalRoleId = roleId;
+
+    if (!finalRoleId) {
+      const alumniRole = await prisma.role.findUnique({
+        where: { name: "Alumni" },
+      });
+      if (!alumniRole) {
+        throw new Error("Default role 'Alumni' not found");
+      }
+      finalRoleId = alumniRole.id;
+    }
 
     const newUser = await prisma.user.create({
       data: {
@@ -48,9 +74,11 @@ export class AuthService {
         nim,
         phoneNumber,
         password: hashedPassword,
-        role: { connect: { id: roleId } },
+        role: { connect: { id: finalRoleId } },
         province: { connect: { id: provinceId } },
         city: { connect: { id: cityId } },
+        faculty: { connect: { id: facultyId } },
+        major: { connect: { id: majorId } },
       },
       include: {
         role: true,

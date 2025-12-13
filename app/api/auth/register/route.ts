@@ -5,7 +5,16 @@ import { ZodError } from "zod";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    let body;
+    const contentType = req.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      body = await req.json();
+    } else {
+      const formData = await req.formData();
+      body = Object.fromEntries(formData.entries());
+    }
+
     const validatedData = registerSchema.parse(body);
 
     const user = await AuthService.register(validatedData);
@@ -28,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     console.error("Registration error:", error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: "Internal server error", error: error.message },
       { status: 500 }
     );
   }

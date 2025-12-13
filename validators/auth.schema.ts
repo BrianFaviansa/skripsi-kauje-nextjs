@@ -6,9 +6,13 @@ export const registerSchema = z.object({
   email: z.email(),
   password: z.string().min(5),
   phoneNumber: z.string().min(10),
-  roleId: z.string(),
+  enrollmentYear: z.coerce.number(),
+  graduationYear: z.coerce.number(),
+  roleId: z.string().optional(),
   provinceId: z.string(),
   cityId: z.string(),
+  facultyId: z.string(),
+  majorId: z.string(),
   verificationFileUrl: z.string().min(1),
 });
 

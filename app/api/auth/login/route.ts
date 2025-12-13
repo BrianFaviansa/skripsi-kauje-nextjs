@@ -5,7 +5,15 @@ import { ZodError } from "zod";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    let body;
+    const contentType = req.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      body = await req.json();
+    } else {
+      const formData = await req.formData();
+      body = Object.fromEntries(formData.entries());
+    }
     const validatedData = loginSchema.parse(body);
 
     const result = await AuthService.login(validatedData);
