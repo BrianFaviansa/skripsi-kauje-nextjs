@@ -123,8 +123,7 @@ export class AuthService {
       data: { refreshToken },
     });
 
-    const { password: _, ...userWithoutPassword } = user;
-    return { user: userWithoutPassword, accessToken, refreshToken };
+    return { accessToken };
   }
 
   static async refreshToken(oldRefreshToken: string) {
@@ -159,12 +158,10 @@ export class AuthService {
       data: { refreshToken: newRefreshToken },
     });
 
-    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+    return { accessToken: newAccessToken };
   }
 
   static async me(accessToken: string) {
-    const payload = await verifyRefreshToken(accessToken); 
-
     return await AuthService.getUserFromToken(accessToken);
   }
 

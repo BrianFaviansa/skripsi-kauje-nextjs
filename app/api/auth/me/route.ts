@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AuthService } from "@/services/auth.service";
 
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { accessToken } = body;
+    const authHeader = req.headers.get("authorization");
 
-    if (!accessToken) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return NextResponse.json(
-        { message: "Access token is required" },
-        { status: 400 }
+        { message: "Unauthorized: Missing or invalid token" },
+        { status: 401 }
       );
     }
+
+    const accessToken = authHeader.split(" ")[1];
 
     const user = await AuthService.me(accessToken);
 

@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { refreshTokenSchema } from "@/validators/auth.schema";
 import { AuthService } from "@/services/auth.service";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { refreshToken } = body;
+    const { oldRefreshToken } = refreshTokenSchema.parse(body);
 
-    if (!refreshToken) {
+    if (!oldRefreshToken) {
       return NextResponse.json(
         { message: "Refresh token is required" },
         { status: 400 }
       );
     }
 
-    const result = await AuthService.refreshToken(refreshToken);
+    const result = await AuthService.refreshToken(oldRefreshToken);
 
     return NextResponse.json(
       {

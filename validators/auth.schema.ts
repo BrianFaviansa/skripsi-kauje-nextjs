@@ -20,3 +20,12 @@ export const loginSchema = z.object({
   nim: z.string().min(5),
   password: z.string().min(5),
 });
+
+export const meSchema = z.object({
+  accessToken: z.string(),
+});
+
+
+export const refreshTokenSchema = z.object({
+  oldRefreshToken: z.string(),
+});
