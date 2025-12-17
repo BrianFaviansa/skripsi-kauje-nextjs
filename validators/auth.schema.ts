@@ -8,11 +8,11 @@ export const registerSchema = z.object({
   phoneNumber: z.string().min(10),
   enrollmentYear: z.coerce.number(),
   graduationYear: z.coerce.number(),
-  roleId: z.string().optional(),
-  provinceId: z.string(),
-  cityId: z.string(),
-  facultyId: z.string(),
-  majorId: z.string(),
+  roleId: z.cuid().optional(),
+  provinceId: z.cuid(),
+  cityId: z.cuid(),
+  facultyId: z.cuid(),
+  majorId: z.cuid(),
   verificationFileUrl: z.string().min(1),
 });
 

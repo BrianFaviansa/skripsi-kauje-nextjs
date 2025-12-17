@@ -23,20 +23,24 @@ export const signRefreshToken = (payload: TokenPayload) => {
   return jwt.sign(payload, REFRESH_SECRET_KEY, { expiresIn: "7d" });
 };
 
-export const verifyAccessToken = async (token: string) => {
+export const verifyAccessToken = async (
+  token: string
+): Promise<TokenPayload | null> => {
   try {
     const { payload } = await jwtVerify(token, ENCODED_KEY);
-    return payload;
+    return payload as unknown as TokenPayload;
   } catch (error) {
     console.error("Access Token verification failed:", error);
     return null;
   }
 };
 
-export const verifyRefreshToken = async (token: string) => {
+export const verifyRefreshToken = async (
+  token: string
+): Promise<TokenPayload | null> => {
   try {
     const { payload } = await jwtVerify(token, ENCODED_REFRESH_KEY);
-    return payload;
+    return payload as unknown as TokenPayload;
   } catch (error) {
     console.error("Refresh Token verification failed:", error);
     return null;
