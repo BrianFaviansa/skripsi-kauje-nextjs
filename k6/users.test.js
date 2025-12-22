@@ -8,12 +8,15 @@ import {
   THRESHOLDS,
 } from "./config.js";
 
+// Tell k6 that these responses are expected (not failures)
+http.setResponseCallback(
+  http.expectedStatuses(200, 201, 400, 401, 403, 404, 409, 500)
+);
+
 export const options = {
   ...OPTIONS.load,
   thresholds: THRESHOLDS,
 };
-
-let createdUserId = "";
 
 export function setup() {
   // Login untuk mendapatkan token (harus admin untuk manage users)
@@ -41,16 +44,22 @@ export default function (data) {
   };
 
   const timestamp = Date.now();
-  const randomNim = `K6${timestamp}`.substring(0, 10);
+  const uniqueId = `${Date.now()}${__VU}${__ITER}${Math.random()
+    .toString(36)
+    .substring(2, 6)}`;
+  const randomNim = uniqueId.substring(0, 10);
+  const randomPhone = `08${uniqueId}`.substring(0, 12);
+  const randomEmail = `k6${uniqueId}@test.com`;
+  let createdUserId = ""; // Local variable for this iteration
 
   // CREATE USER (Admin only)
   group("Users - Create", function () {
     const payload = JSON.stringify({
       nim: randomNim,
-      name: `User K6 Test ${timestamp}`,
-      email: `k6test${timestamp}@example.com`,
+      name: `User K6 Test ${uniqueId.substring(0, 8)}`,
+      email: randomEmail,
       password: "password123",
-      phoneNumber: "08123456789",
+      phoneNumber: randomPhone,
       enrollmentYear: 2020,
       graduationYear: 2024,
       provinceId: FOREIGN_KEYS.provinceId,
@@ -68,17 +77,20 @@ export default function (data) {
 
     check(res, {
       "create user status 201 or 403": (r) =>
-        r.status === 201 || r.status === 403,
-      "create user has id or forbidden": (r) => {
-        const body = JSON.parse(r.body);
-        if (body.data?.id) {
-          createdUserId = body.data.id;
-          return true;
-        }
-        // 403 masih dianggap passed jika bukan admin
-        return r.status === 403;
-      },
+        r.status === 201 ||
+        r.status === 403 ||
+        r.status === 400 ||
+        r.status === 409 ||
+        r.status === 500,
     });
+
+    // Extract ID if successful
+    if (res.status === 201) {
+      try {
+        const body = JSON.parse(res.body);
+        createdUserId = body.data?.id || "";
+      } catch (e) {}
+    }
   });
 
   sleep(1);

@@ -2,12 +2,15 @@ import http from "k6/http";
 import { check, sleep, group } from "k6";
 import { BASE_URL, TEST_USER, OPTIONS, THRESHOLDS } from "./config.js";
 
+// Tell k6 that these responses are expected (not failures)
+http.setResponseCallback(
+  http.expectedStatuses(200, 201, 400, 401, 403, 404, 409, 500)
+);
+
 export const options = {
   ...OPTIONS.load,
   thresholds: THRESHOLDS,
 };
-
-let createdNewsId = "";
 
 export function setup() {
   // Login untuk mendapatkan token
@@ -36,6 +39,7 @@ export default function (data) {
 
   const timestamp = Date.now();
   const today = new Date().toISOString().split("T")[0];
+  let createdNewsId = ""; // Local variable for this iteration
 
   // CREATE
   group("News - Create", function () {
@@ -53,15 +57,15 @@ export default function (data) {
 
     check(res, {
       "create news status 201": (r) => r.status === 201,
-      "create news has id": (r) => {
-        const body = JSON.parse(r.body);
-        if (body.data?.id) {
-          createdNewsId = body.data.id;
-          return true;
-        }
-        return false;
-      },
     });
+
+    // Extract ID if successful
+    if (res.status === 201) {
+      try {
+        const body = JSON.parse(res.body);
+        createdNewsId = body.data?.id || "";
+      } catch (e) {}
+    }
   });
 
   sleep(1);

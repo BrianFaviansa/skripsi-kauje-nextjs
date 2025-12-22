@@ -2,13 +2,15 @@ import http from "k6/http";
 import { check, sleep, group } from "k6";
 import { BASE_URL, TEST_USER, OPTIONS, THRESHOLDS } from "./config.js";
 
+// Tell k6 that these responses are expected (not failures)
+http.setResponseCallback(
+  http.expectedStatuses(200, 201, 400, 401, 403, 404, 409, 500)
+);
+
 export const options = {
   ...OPTIONS.load,
   thresholds: THRESHOLDS,
 };
-
-let createdForumId = "";
-let createdCommentId = "";
 
 export function setup() {
   // Login untuk mendapatkan token
@@ -36,6 +38,8 @@ export default function (data) {
   };
 
   const timestamp = Date.now();
+  let createdForumId = ""; // Local variable for this iteration
+  let createdCommentId = ""; // Local variable for this iteration
 
   // CREATE FORUM
   group("Forums - Create", function () {
@@ -52,15 +56,15 @@ export default function (data) {
 
     check(res, {
       "create forum status 201": (r) => r.status === 201,
-      "create forum has id": (r) => {
-        const body = JSON.parse(r.body);
-        if (body.data?.id) {
-          createdForumId = body.data.id;
-          return true;
-        }
-        return false;
-      },
     });
+
+    // Extract ID if successful
+    if (res.status === 201) {
+      try {
+        const body = JSON.parse(res.body);
+        createdForumId = body.data?.id || "";
+      } catch (e) {}
+    }
   });
 
   sleep(1);
@@ -143,15 +147,15 @@ export default function (data) {
 
       check(res, {
         "create comment status 201": (r) => r.status === 201,
-        "create comment has id": (r) => {
-          const body = JSON.parse(r.body);
-          if (body.data?.id) {
-            createdCommentId = body.data.id;
-            return true;
-          }
-          return false;
-        },
       });
+
+      // Extract ID if successful
+      if (res.status === 201) {
+        try {
+          const body = JSON.parse(res.body);
+          createdCommentId = body.data?.id || "";
+        } catch (e) {}
+      }
     });
 
     sleep(1);

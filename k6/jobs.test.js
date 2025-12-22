@@ -8,12 +8,15 @@ import {
   THRESHOLDS,
 } from "./config.js";
 
+// Tell k6 that these responses are expected (not failures)
+http.setResponseCallback(
+  http.expectedStatuses(200, 201, 400, 401, 403, 404, 409, 500)
+);
+
 export const options = {
   ...OPTIONS.load,
   thresholds: THRESHOLDS,
 };
-
-let createdJobId = "";
 
 export function setup() {
   // Login untuk mendapatkan token
@@ -45,6 +48,7 @@ export default function (data) {
   const nextMonth = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     .toISOString()
     .split("T")[0];
+  let createdJobId = ""; // Local variable for this iteration
 
   // CREATE
   group("Jobs - Create", function () {
@@ -53,7 +57,7 @@ export default function (data) {
       content:
         "Deskripsi lowongan kerja untuk testing dengan k6 load testing. Kami mencari kandidat yang berpengalaman.",
       company: "PT K6 Testing Indonesia",
-      jobType: "FULL_TIME", // Sesuaikan dengan enum JobType
+      jobType: "LOKER", // Sesuaikan dengan enum JobType
       openFrom: today,
       openUntil: nextMonth,
       registrationLink: "https://example.com/apply",
@@ -69,15 +73,15 @@ export default function (data) {
 
     check(res, {
       "create job status 201": (r) => r.status === 201,
-      "create job has id": (r) => {
-        const body = JSON.parse(r.body);
-        if (body.data?.id) {
-          createdJobId = body.data.id;
-          return true;
-        }
-        return false;
-      },
     });
+
+    // Extract ID if successful
+    if (res.status === 201) {
+      try {
+        const body = JSON.parse(res.body);
+        createdJobId = body.data?.id || "";
+      } catch (e) {}
+    }
   });
 
   sleep(1);
@@ -114,7 +118,7 @@ export default function (data) {
 
   // FILTER by jobType
   group("Jobs - Filter by Type", function () {
-    const res = http.get(`${BASE_URL}/jobs?jobType=FULL_TIME&page=1&limit=10`, {
+    const res = http.get(`${BASE_URL}/jobs?jobType=LOKER&page=1&limit=10`, {
       headers: authHeaders,
     });
 

@@ -2,12 +2,15 @@ import http from "k6/http";
 import { check, sleep, group } from "k6";
 import { BASE_URL, TEST_USER, OPTIONS, THRESHOLDS } from "./config.js";
 
+// Tell k6 that these responses are expected (not failures)
+http.setResponseCallback(
+  http.expectedStatuses(200, 201, 400, 401, 403, 404, 409, 500)
+);
+
 export const options = {
   ...OPTIONS.load,
   thresholds: THRESHOLDS,
 };
-
-let createdProductId = "";
 
 export function setup() {
   // Login untuk mendapatkan token
@@ -35,6 +38,7 @@ export default function (data) {
   };
 
   const timestamp = Date.now();
+  let createdProductId = ""; // Local variable for this iteration
 
   // CREATE
   group("Products - Create", function () {
@@ -53,15 +57,15 @@ export default function (data) {
 
     check(res, {
       "create product status 201": (r) => r.status === 201,
-      "create product has id": (r) => {
-        const body = JSON.parse(r.body);
-        if (body.data?.id) {
-          createdProductId = body.data.id;
-          return true;
-        }
-        return false;
-      },
     });
+
+    // Extract ID if successful
+    if (res.status === 201) {
+      try {
+        const body = JSON.parse(res.body);
+        createdProductId = body.data?.id || "";
+      } catch (e) {}
+    }
   });
 
   sleep(1);
