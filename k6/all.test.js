@@ -84,7 +84,7 @@ export default function (data) {
       title: `Job All Test ${timestamp}`,
       content: "Deskripsi lowongan kerja untuk comprehensive testing.",
       company: "PT All Test",
-      jobType: "FULL_TIME",
+      jobType: "LOKER",
       openFrom: today,
       openUntil: nextMonth,
       registrationLink: "",

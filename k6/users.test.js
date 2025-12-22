@@ -171,7 +171,7 @@ export default function (data) {
         position: "Senior Engineer",
       });
 
-      const res = http.patch(`${BASE_URL}/users/${createdUserId}`, payload, {
+      const res = http.put(`${BASE_URL}/users/${createdUserId}`, payload, {
         headers: authHeaders,
       });
 

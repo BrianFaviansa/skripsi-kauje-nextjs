@@ -150,7 +150,7 @@ export default function (data) {
         content: "Deskripsi lowongan yang sudah diupdate melalui k6.",
       });
 
-      const res = http.patch(`${BASE_URL}/jobs/${createdJobId}`, payload, {
+      const res = http.put(`${BASE_URL}/jobs/${createdJobId}`, payload, {
         headers: authHeaders,
       });
 

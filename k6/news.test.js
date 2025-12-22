@@ -142,7 +142,7 @@ export default function (data) {
         content: "Konten berita yang sudah diupdate melalui k6.",
       });
 
-      const res = http.patch(`${BASE_URL}/news/${createdNewsId}`, payload, {
+      const res = http.put(`${BASE_URL}/news/${createdNewsId}`, payload, {
         headers: authHeaders,
       });
 

@@ -176,7 +176,7 @@ export default function (data) {
         price: 200000,
       });
 
-      const res = http.patch(
+      const res = http.put(
         `${BASE_URL}/products/${createdProductId}`,
         payload,
         {

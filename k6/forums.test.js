@@ -116,7 +116,7 @@ export default function (data) {
         content: "Konten forum yang sudah diupdate melalui k6.",
       });
 
-      const res = http.patch(`${BASE_URL}/forums/${createdForumId}`, payload, {
+      const res = http.put(`${BASE_URL}/forums/${createdForumId}`, payload, {
         headers: authHeaders,
       });
 
