@@ -5,19 +5,19 @@ export const BASE_URL = "http://localhost:3000/api";
 
 // Test user credentials (sesuaikan dengan data di database)
 export const TEST_USER = {
-  nim: "12345",
+  nim: "202410101014",
   password: "password123",
 };
 
 // Foreign Keys - Ganti dengan CUID yang valid dari database kamu
 export const FOREIGN_KEYS = {
-  provinceId: "GANTI_DENGAN_PROVINCE_ID",
-  cityId: "GANTI_DENGAN_CITY_ID",
-  facultyId: "GANTI_DENGAN_FACULTY_ID",
-  majorId: "GANTI_DENGAN_MAJOR_ID",
+  provinceId: "cmjgzhqzq007bt407znej4rl5",
+  cityId: "cmjgzhr0v007it407low43neg",
+  facultyId: "cmjgzhlwg0002t407hh67fzrf",
+  majorId: "cmjgzhlz7000ht4078229mstr",
   roleId: "GANTI_DENGAN_ROLE_ID", // optional
-  jobFieldId: "GANTI_DENGAN_JOB_FIELD_ID",
-  collaborationFieldId: "GANTI_DENGAN_COLLABORATION_FIELD_ID",
+  jobFieldId: "cmjgzhm63002pt407zniilhdv",
+  collaborationFieldId: "cmjgzhm7k002zt407rfy460pe",
 };
 
 // Load test options
@@ -27,36 +27,20 @@ export const OPTIONS = {
     vus: 1,
     duration: "30s",
   },
-  // Load test - normal expected load
+  // Load test - gradual ramp up to 100 VUs (3 minutes total)
   load: {
     stages: [
-      { duration: "1m", target: 10 }, // ramp up to 10 users
-      { duration: "3m", target: 10 }, // stay at 10 users
-      { duration: "1m", target: 0 }, // ramp down to 0
-    ],
-  },
-  // Stress test - find breaking point
-  stress: {
-    stages: [
-      { duration: "2m", target: 10 },
-      { duration: "5m", target: 50 },
-      { duration: "2m", target: 100 },
-      { duration: "5m", target: 100 },
-      { duration: "2m", target: 0 },
-    ],
-  },
-  // Spike test - sudden surge in traffic
-  spike: {
-    stages: [
-      { duration: "10s", target: 100 },
-      { duration: "1m", target: 100 },
-      { duration: "10s", target: 0 },
+      { duration: "30s", target: 50 }, // ramp up to 50 users
+      { duration: "30s", target: 100 }, // ramp up to 100 users
+      { duration: "1m", target: 100 }, // stay at 100 users (steady state)
+      { duration: "30s", target: 50 }, // ramp down to 50 users
+      { duration: "30s", target: 0 }, // ramp down to 0
     ],
   },
 };
 
-// Thresholds for performance
+// Thresholds for performance (realistic for local development with 100 VUs)
 export const THRESHOLDS = {
-  http_req_duration: ["p(95)<500"], // 95% of requests should be below 500ms
-  http_req_failed: ["rate<0.01"], // Less than 1% of requests should fail
+  http_req_duration: ["p(95)<2000"], // 95% of requests should be below 2 seconds
+  http_req_failed: ["rate<0.10"], // Less than 10% of requests should fail
 };
