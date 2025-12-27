@@ -11,10 +11,10 @@ export const TEST_USER = {
 
 // Foreign Keys - Ganti dengan CUID yang valid dari database kamu
 export const FOREIGN_KEYS = {
-  provinceId: "cmjnom5fh00bx3hqyimk9yyk5",
-  cityId: "cmjnom5ql00c43hqyfgz7ufjd",
-  facultyId: "cmjnolp4n00023hqywr3viici",
-  majorId: "cmjnolp7o000j3hqy9p5mx0hl",
+  provinceId: "cmjnolqjf00353hqyeq7b452h",
+  cityId: "cmjnolqu0003c3hqyk3qyam4c",
+  facultyId: "cmjnolp4v00033hqyyk8fuj5x",
+  majorId: "cmjnolp7q000k3hqyeshqypze",
   roleId: "GANTI_DENGAN_ROLE_ID", // optional
   jobFieldId: "cmjnolpdj002p3hqydkyb1sgv",
   collaborationFieldId: "cmjnolper002z3hqykh9zfcft",
