@@ -410,6 +410,53 @@ async function seedProvincesAndCities() {
   }
 }
 
+async function seedTestUser() {
+  console.log("Seeding test user for K6 testing...");
+
+  // Get required foreign keys
+  const role = await prisma.role.findFirst({ where: { name: "Alumni" } });
+  const province = await prisma.province.findFirst();
+  const city = await prisma.city.findFirst({
+    where: { provinceId: province?.id },
+  });
+  const faculty = await prisma.faculty.findFirst();
+  const major = await prisma.major.findFirst({
+    where: { facultyId: faculty?.id },
+  });
+
+  if (!role || !province || !city || !faculty || !major) {
+    console.error("Missing required data for test user. Skipping...");
+    return;
+  }
+
+  // Hash password using bcrypt
+  const bcrypt = await import("bcrypt");
+  const hashedPassword = await bcrypt.hash("password123", 10);
+
+  await prisma.user.upsert({
+    where: { nim: "202410101014" },
+    update: {},
+    create: {
+      nim: "202410101014",
+      name: "K6 Test User",
+      email: "k6test@example.com",
+      password: hashedPassword,
+      phoneNumber: "081234567890",
+      enrollmentYear: 2024,
+      graduationYear: 2028,
+      verificationFileUrl: "/uploads/verification/test.pdf",
+      verificationStatus: "VERIFIED",
+      roleId: role.id,
+      provinceId: province.id,
+      cityId: city.id,
+      facultyId: faculty.id,
+      majorId: major.id,
+    },
+  });
+
+  console.log("Test user seeded: NIM=202410101014, password=password123");
+}
+
 async function main() {
   console.log("🚀 Starting database seeding...");
   try {
@@ -419,6 +466,7 @@ async function main() {
     await seedJobFields();
     await seedCollaborationFields();
     await seedProvincesAndCities();
+    await seedTestUser();
     console.log("✨ Seeding process completed successfully.");
   } catch (e) {
     console.error("💥 Seeding failed:");

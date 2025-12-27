@@ -11,13 +11,13 @@ export const TEST_USER = {
 
 // Foreign Keys - Ganti dengan CUID yang valid dari database kamu
 export const FOREIGN_KEYS = {
-  provinceId: "cmjgzhqzq007bt407znej4rl5",
-  cityId: "cmjgzhr0v007it407low43neg",
-  facultyId: "cmjgzhlwg0002t407hh67fzrf",
-  majorId: "cmjgzhlz7000ht4078229mstr",
+  provinceId: "cmjnom5fh00bx3hqyimk9yyk5",
+  cityId: "cmjnom5ql00c43hqyfgz7ufjd",
+  facultyId: "cmjnolp4n00023hqywr3viici",
+  majorId: "cmjnolp7o000j3hqy9p5mx0hl",
   roleId: "GANTI_DENGAN_ROLE_ID", // optional
-  jobFieldId: "cmjgzhm63002pt407zniilhdv",
-  collaborationFieldId: "cmjgzhm7k002zt407rfy460pe",
+  jobFieldId: "cmjnolpdj002p3hqydkyb1sgv",
+  collaborationFieldId: "cmjnolper002z3hqykh9zfcft",
 };
 
 // Load test options
