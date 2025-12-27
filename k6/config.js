@@ -1,7 +1,7 @@
 // K6 Load Test Configuration
 // Gunakan environment variable untuk override: k6 run -e API_URL=http://VPS_IP:3000/api
 
-export const BASE_URL = __ENV.API_URL || "http://localhost:3000/api";
+export const BASE_URL = __ENV.API_URL || "http://103.47.227.38:3000/api";
 
 // Test user credentials (sesuaikan dengan data di database)
 export const TEST_USER = {
