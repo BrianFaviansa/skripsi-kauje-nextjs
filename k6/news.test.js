@@ -2,11 +2,6 @@ import http from "k6/http";
 import { check, sleep, group } from "k6";
 import { BASE_URL, TEST_USER, OPTIONS, THRESHOLDS } from "./config.js";
 
-// Tell k6 that these responses are expected (not failures)
-http.setResponseCallback(
-  http.expectedStatuses(200, 201, 400, 401, 403, 404, 409, 500)
-);
-
 export const options = {
   ...OPTIONS.load,
   thresholds: THRESHOLDS,

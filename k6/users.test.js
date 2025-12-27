@@ -8,11 +8,6 @@ import {
   THRESHOLDS,
 } from "./config.js";
 
-// Tell k6 that these responses are expected (not failures)
-http.setResponseCallback(
-  http.expectedStatuses(200, 201, 400, 401, 403, 404, 409, 500)
-);
-
 export const options = {
   ...OPTIONS.load,
   thresholds: THRESHOLDS,
@@ -76,12 +71,7 @@ export default function (data) {
     });
 
     check(res, {
-      "create user status 201 or 403": (r) =>
-        r.status === 201 ||
-        r.status === 403 ||
-        r.status === 400 ||
-        r.status === 409 ||
-        r.status === 500,
+      "create user status 201": (r) => r.status === 201,
     });
 
     // Extract ID if successful
@@ -188,8 +178,7 @@ export default function (data) {
       });
 
       check(res, {
-        "update user status 200 or 403": (r) =>
-          r.status === 200 || r.status === 403,
+        "update user status 200": (r) => r.status === 200,
       });
     });
 

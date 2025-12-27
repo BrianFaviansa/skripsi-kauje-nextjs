@@ -8,10 +8,6 @@ import {
   THRESHOLDS,
 } from "./config.js";
 
-// Tell k6 that 400, 409, 500 responses are expected (not failures)
-// This affects the http_req_failed metric
-http.setResponseCallback(http.expectedStatuses(200, 201, 400, 409, 500));
-
 export const options = {
   ...OPTIONS.load,
   thresholds: THRESHOLDS,
@@ -81,13 +77,7 @@ export default function (data) {
     });
 
     check(res, {
-      "register response received": (r) => r.status > 0,
-      "register status is valid HTTP": (r) =>
-        r.status === 201 ||
-        r.status === 400 ||
-        r.status === 409 ||
-        r.status === 500,
-      "register response has body": (r) => r.body && r.body.length > 0,
+      "register status 201": (r) => r.status === 201,
     });
   });
 
@@ -145,8 +135,7 @@ export default function (data) {
       );
 
       check(res, {
-        "refresh status 200 or 401": (r) =>
-          r.status === 200 || r.status === 401,
+        "refresh status 200": (r) => r.status === 200,
       });
     }
   });

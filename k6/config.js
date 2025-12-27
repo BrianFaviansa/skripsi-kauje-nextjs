@@ -30,10 +30,10 @@ export const OPTIONS = {
   // Load test - gradual ramp up to 100 VUs (3 minutes total)
   load: {
     stages: [
-      { duration: "30s", target: 50 }, // ramp up to 50 users
-      { duration: "30s", target: 100 }, // ramp up to 100 users
-      { duration: "1m", target: 100 }, // stay at 100 users (steady state)
-      { duration: "30s", target: 50 }, // ramp down to 50 users
+      { duration: "30s", target: 50 }, // ramp up to 25 users
+      { duration: "30s", target: 100 }, // ramp up to 50 users
+      { duration: "1m", target: 100 }, // stay at 50 users (steady state)
+      { duration: "30s", target: 50 }, // ramp down to 25 users
       { duration: "30s", target: 0 }, // ramp down to 0
     ],
   },
