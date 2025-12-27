@@ -6,7 +6,10 @@ import {
   FOREIGN_KEYS,
   OPTIONS,
   THRESHOLDS,
+  handleSummary,
 } from "./config.js";
+
+export { handleSummary };
 
 export const options = {
   ...OPTIONS.load,

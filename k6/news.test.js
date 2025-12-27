@@ -1,6 +1,14 @@
 import http from "k6/http";
 import { check, sleep, group } from "k6";
-import { BASE_URL, TEST_USER, OPTIONS, THRESHOLDS } from "./config.js";
+import {
+  BASE_URL,
+  TEST_USER,
+  OPTIONS,
+  THRESHOLDS,
+  handleSummary,
+} from "./config.js";
+
+export { handleSummary };
 
 export const options = {
   ...OPTIONS.load,

@@ -1,7 +1,7 @@
 // K6 Load Test Configuration
-// Ubah BASE_URL sesuai dengan environment yang akan ditest
+// Gunakan environment variable untuk override: k6 run -e API_URL=http://VPS_IP:3000/api
 
-export const BASE_URL = "http://localhost:3000/api";
+export const BASE_URL = __ENV.API_URL || "http://localhost:3000/api";
 
 // Test user credentials (sesuaikan dengan data di database)
 export const TEST_USER = {
@@ -30,17 +30,72 @@ export const OPTIONS = {
   // Load test - gradual ramp up to 100 VUs (3 minutes total)
   load: {
     stages: [
-      { duration: "30s", target: 50 }, // ramp up to 25 users
-      { duration: "30s", target: 100 }, // ramp up to 50 users
-      { duration: "1m", target: 100 }, // stay at 50 users (steady state)
-      { duration: "30s", target: 50 }, // ramp down to 25 users
+      { duration: "30s", target: 50 }, // ramp up to 50 users
+      { duration: "30s", target: 100 }, // ramp up to 100 users
+      { duration: "1m", target: 100 }, // stay at 100 users (steady state)
+      { duration: "30s", target: 50 }, // ramp down to 50 users
       { duration: "30s", target: 0 }, // ramp down to 0
     ],
   },
 };
 
-// Thresholds for performance (realistic for local development with 100 VUs)
+// Thresholds for performance
 export const THRESHOLDS = {
-  http_req_duration: ["p(95)<2000"], // 95% of requests should be below 2 seconds
-  http_req_failed: ["rate<0.10"], // Less than 10% of requests should fail
+  http_req_duration: ["p(95)<1000"], // p95 latency < 1 seconds
+  http_req_failed: ["rate<0.10"], // Success rate > 90%
 };
+
+// Custom summary handler - displays key metrics
+export function handleSummary(data) {
+  const metrics = data.metrics;
+
+  // Response Time (avg)
+  const avgResponseTime =
+    metrics.http_req_duration?.values?.avg?.toFixed(2) || "N/A";
+
+  // P95 Latency
+  const p95Latency =
+    metrics.http_req_duration?.values?.["p(95)"]?.toFixed(2) || "N/A";
+
+  // Throughput (requests per second)
+  const totalRequests = metrics.http_reqs?.values?.count || 0;
+  const totalDuration =
+    (metrics.iteration_duration?.values?.count *
+      metrics.iteration_duration?.values?.avg) /
+      1000 || 1;
+  const throughput = (
+    totalRequests /
+    (data.state.testRunDurationMs / 1000)
+  ).toFixed(2);
+
+  // Success Rate
+  const failedRate = metrics.http_req_failed?.values?.rate || 0;
+  const successRate = ((1 - failedRate) * 100).toFixed(2);
+
+  const summary = `
+╔══════════════════════════════════════════════════════════════╗
+║                    K6 LOAD TEST RESULTS                      ║
+╠══════════════════════════════════════════════════════════════╣
+║  Response Time (avg)  │  ${avgResponseTime.padStart(
+    10
+  )} ms                     ║
+║  P95 Latency          │  ${p95Latency.padStart(10)} ms                     ║
+║  Throughput           │  ${throughput.padStart(10)} req/s                  ║
+║  Success Rate         │  ${successRate.padStart(10)} %                     ║
+╠══════════════════════════════════════════════════════════════╣
+║  Total Requests       │  ${String(totalRequests).padStart(
+    10
+  )}                       ║
+║  Test Duration        │  ${(data.state.testRunDurationMs / 1000)
+    .toFixed(2)
+    .padStart(10)} s                      ║
+╚══════════════════════════════════════════════════════════════╝
+`;
+
+  return {
+    stdout:
+      summary + "\n" + textSummary(data, { indent: "  ", enableColors: true }),
+  };
+}
+
+import { textSummary } from "https://jslib.k6.io/k6-summary/0.0.1/index.js";
