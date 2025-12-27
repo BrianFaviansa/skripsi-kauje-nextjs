@@ -41,13 +41,20 @@ export default function (data) {
     Authorization: `Bearer ${data.accessToken}`,
   };
 
+  // Generate guaranteed unique values: VU + ITER ensures uniqueness across all VUs
+  const vuPad = String(__VU).padStart(3, "0"); // 001-100
+  const iterPad = String(__ITER).padStart(4, "0"); // 0000-9999
   const timestamp = Date.now();
-  const uniqueId = `${Date.now()}${__VU}${__ITER}${Math.random()
-    .toString(36)
-    .substring(2, 6)}`;
-  const randomNim = uniqueId.substring(0, 10);
-  const randomPhone = `08${uniqueId}`.substring(0, 12);
-  const randomEmail = `k6${uniqueId}@test.com`;
+
+  // NIM: 10 chars - VU(3) + ITER(4) + timestamp(3) = unique per iteration
+  const randomNim = `${vuPad}${iterPad}${String(timestamp).slice(-3)}`;
+  // Phone: 12 chars - 08 + VU(2) + ITER(4) + random(4) = unique per iteration
+  const randomPhone = `08${String(__VU).padStart(2, "0")}${iterPad}${String(
+    timestamp
+  ).slice(-4)}`;
+  // Email: fully unique
+  const randomEmail = `k6_v${__VU}_i${__ITER}_${timestamp}@test.com`;
+  const uniqueId = `${vuPad}${iterPad}${timestamp}`;
   let createdUserId = ""; // Local variable for this iteration
 
   // CREATE USER (Admin only)

@@ -12,9 +12,9 @@ export const TEST_USER = {
 // Foreign Keys - Ganti dengan CUID yang valid dari database kamu
 export const FOREIGN_KEYS = {
   provinceId: "cmjnolqjf00353hqyeq7b452h",
-  cityId: "cmjnolqu0003c3hqyk3qyam4c",
+  cityId: "cmjnolqxe003h3hqy6clw6e58",
   facultyId: "cmjnolp4v00033hqyyk8fuj5x",
-  majorId: "cmjnolp7q000k3hqyeshqypze",
+  majorId: "cmjnolp7t000l3hqyv7brqc52",
   roleId: "GANTI_DENGAN_ROLE_ID", // optional
   jobFieldId: "cmjnolpdj002p3hqydkyb1sgv",
   collaborationFieldId: "cmjnolper002z3hqykh9zfcft",
@@ -72,24 +72,22 @@ export function handleSummary(data) {
   const failedRate = metrics.http_req_failed?.values?.rate || 0;
   const successRate = ((1 - failedRate) * 100).toFixed(2);
 
+  const testDuration = (data.state.testRunDurationMs / 1000).toFixed(2);
+
   const summary = `
-╔══════════════════════════════════════════════════════════════╗
-║                    K6 LOAD TEST RESULTS                      ║
-╠══════════════════════════════════════════════════════════════╣
-║  Response Time (avg)  │  ${avgResponseTime.padStart(
-    10
-  )} ms                     ║
-║  P95 Latency          │  ${p95Latency.padStart(10)} ms                     ║
-║  Throughput           │  ${throughput.padStart(10)} req/s                  ║
-║  Success Rate         │  ${successRate.padStart(10)} %                     ║
-╠══════════════════════════════════════════════════════════════╣
-║  Total Requests       │  ${String(totalRequests).padStart(
-    10
-  )}                       ║
-║  Test Duration        │  ${(data.state.testRunDurationMs / 1000)
-    .toFixed(2)
-    .padStart(10)} s                      ║
-╚══════════════════════════════════════════════════════════════╝
+========================================
+        K6 LOAD TEST RESULTS
+========================================
+
+  Response Time (avg) :  ${avgResponseTime} ms
+  P95 Latency         :  ${p95Latency} ms
+  Throughput          :  ${throughput} req/s
+  Success Rate        :  ${successRate} %
+
+----------------------------------------
+  Total Requests      :  ${totalRequests}
+  Test Duration       :  ${testDuration} s
+========================================
 `;
 
   return {
