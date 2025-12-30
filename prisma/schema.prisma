@@ -13,52 +13,158 @@ datasource db {
   provider = "postgresql"
 }
 
+// ============================================
+// ENUMS - Matching Laravel enum values
+// ============================================
+
 enum VerificationStatus {
   PENDING
   VERIFIED
   REJECTED
+
+  @@map("verification_status")
 }
 
 enum JobType {
   LOKER
   MAGANG
+
+  @@map("job_type")
 }
 
 enum ProductCategory {
   JASA
   PRODUK
+
+  @@map("product_category")
 }
 
+// ============================================
+// BASE MODELS
+// ============================================
+
+model Role {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users User[]
+
+  @@map("roles")
+}
+
+model Province {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  cities City[]
+  users  User[]
+  jobs   Job[]
+
+  @@map("provinces")
+}
+
+model City {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  province   Province @relation(fields: [provinceId], references: [id])
+  provinceId String   @map("province_id") @db.Uuid
+
+  users User[]
+  jobs  Job[]
+
+  @@map("cities")
+}
+
+model Faculty {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users  User[]
+  majors Major[]
+
+  @@map("faculties")
+}
+
+model Major {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  faculty   Faculty @relation(fields: [facultyId], references: [id])
+  facultyId String  @map("faculty_id") @db.Uuid
+
+  users User[]
+
+  @@map("majors")
+}
+
+model JobField {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  jobs Job[]
+
+  @@map("job_fields")
+}
+
+model CollaborationField {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  collaborations Collaboration[]
+
+  @@map("collaboration_fields")
+}
+
+// ============================================
+// USER MODEL
+// ============================================
+
 model User {
-  id                  String   @id @default(cuid())
+  id                  String   @id @default(uuid()) @db.Uuid
   nim                 String   @unique
   name                String
   email               String   @unique
   password            String
-  placeDateOfBirth    String?
-  phoneNumber         String   @unique
-  enrollmentYear      Int
-  graduationYear      Int
+  placeDateOfBirth    String?  @map("place_date_of_birth")
+  phoneNumber         String   @unique @map("phone_number")
+  enrollmentYear      Int      @map("enrollment_year")
+  graduationYear      Int      @map("graduation_year")
   instance            String?
   position            String?
-  verificationFileUrl String
-  profilePictureUrl   String?
-  refreshToken        String?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  verificationFileUrl String   @map("verification_file_url")
+  profilePictureUrl   String?  @map("profile_picture_url")
+  refreshToken        String?  @map("refresh_token")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
 
-  verificationStatus VerificationStatus @default(PENDING)
+  verificationStatus VerificationStatus @default(PENDING) @map("verification_status")
 
-  role           Role            @relation(fields: [roleId], references: [id])
-  roleId         String
-  province       Province        @relation(fields: [provinceId], references: [id])
-  provinceId     String
-  city           City            @relation(fields: [cityId], references: [id])
-  cityId         String
-  faculty        Faculty?        @relation(fields: [facultyId], references: [id])
-  facultyId      String?
-  major          Major?         @relation(fields: [majorId], references: [id])
-  majorId       String?
+  role       Role     @relation(fields: [roleId], references: [id])
+  roleId     String   @map("role_id") @db.Uuid
+  province   Province @relation(fields: [provinceId], references: [id])
+  provinceId String   @map("province_id") @db.Uuid
+  city       City     @relation(fields: [cityId], references: [id])
+  cityId     String   @map("city_id") @db.Uuid
+  faculty    Faculty  @relation(fields: [facultyId], references: [id])
+  facultyId  String   @map("faculty_id") @db.Uuid
+  major      Major    @relation(fields: [majorId], references: [id])
+  majorId    String   @map("major_id") @db.Uuid
+
   forums         Forum[]
   jobs           Job[]
   collaborations Collaboration[]
@@ -74,206 +180,146 @@ model User {
   @@index([facultyId])
   @@index([majorId])
   @@index([createdAt])
+  @@map("users")
 }
 
-model Role {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  users User[]
-}
-
-model Province {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  cities City[]
-  users  User[]
-  jobs   Job[]
-}
-
-model City {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  province   Province @relation(fields: [provinceId], references: [id])
-  provinceId String
-
-  users User[]
-  jobs  Job[]
-}
-
-model Faculty {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  users  User[]
-  majors Major[]
-}
-
-model Major {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  faculty   Faculty @relation(fields: [facultyId], references: [id])
-  facultyId String
-  users     User[]
-}
-
-model JobField {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  jobs Job[]
-}
-
-model CollaborationField {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  collaborations Collaboration[]
-}
+// ============================================
+// FEATURE MODELS
+// ============================================
 
 model Job {
-  id               String   @id @default(cuid())
+  id               String   @id @default(uuid()) @db.Uuid
   title            String
   content          String   @db.Text
   company          String
-  jobType          JobType
-  openFrom         DateTime
-  openUntil        DateTime
-  registrationLink String?
-  imageUrl         String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  jobType          JobType  @map("job_type")
+  openFrom         DateTime @map("open_from")
+  openUntil        DateTime @map("open_until")
+  registrationLink String?  @map("registration_link")
+  imageUrl         String?  @map("image_url")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   postedBy   User     @relation(fields: [postedById], references: [id])
-  postedById String
+  postedById String   @map("posted_by_id") @db.Uuid
   jobField   JobField @relation(fields: [jobFieldId], references: [id])
-  jobFieldId String
+  jobFieldId String   @map("job_field_id") @db.Uuid
   province   Province @relation(fields: [provinceId], references: [id])
-  provinceId String
+  provinceId String   @map("province_id") @db.Uuid
   city       City     @relation(fields: [cityId], references: [id])
-  cityId     String
+  cityId     String   @map("city_id") @db.Uuid
 
   @@index([jobType])
   @@index([provinceId])
   @@index([cityId])
   @@index([jobFieldId])
   @@index([createdAt])
+  @@map("jobs")
 }
 
 model Collaboration {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid()) @db.Uuid
   title     String
   content   String   @db.Text
-  imageUrl  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  imageUrl  String?  @map("image_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   postedBy             User                @relation(fields: [postedById], references: [id])
-  postedById           String
+  postedById           String              @map("posted_by_id") @db.Uuid
   collaborationField   CollaborationField? @relation(fields: [collaborationFieldId], references: [id])
-  collaborationFieldId String?
+  collaborationFieldId String?             @map("collaboration_field_id") @db.Uuid
 
   @@index([collaborationFieldId])
   @@index([createdAt])
+  @@map("collaborations")
 }
 
 model Product {
-  id          String          @id @default(cuid())
+  id          String   @id @default(uuid()) @db.Uuid
   name        String
-  description String          @db.Text
-  price       Float
-  category    ProductCategory
-  imageUrl    String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  description String   @db.Text
+  price       Decimal  @db.Decimal(10, 2)
+  category    String
+  imageUrl    String?  @map("image_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  postedBy   User   @relation(fields: [postedById], references: [id])
-  postedById String
+  postedBy   User   @relation(fields: [postedById], references: [id], onDelete: Cascade)
+  postedById String @map("posted_by_id") @db.Uuid
 
   @@index([category])
   @@index([price])
   @@index([postedById])
   @@index([createdAt])
+  @@map("products")
 }
 
 model Forum {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid()) @db.Uuid
   title     String
   content   String   @db.Text
-  imageUrl  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  imageUrl  String?  @map("image_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  postedBy   User   @relation(fields: [postedById], references: [id])
-  postedById String
+  postedBy   User   @relation(fields: [postedById], references: [id], onDelete: Cascade)
+  postedById String @map("posted_by_id") @db.Uuid
 
   comments   ForumComment[]
   forumLikes ForumLike[]
 
   @@index([postedById])
   @@index([createdAt])
+  @@map("forums")
 }
 
 model ForumComment {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid()) @db.Uuid
   content   String   @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  postedBy   User   @relation(fields: [postedById], references: [id])
-  postedById String
+  postedBy   User   @relation(fields: [postedById], references: [id], onDelete: Cascade)
+  postedById String @map("posted_by_id") @db.Uuid
 
-  forum   Forum  @relation(fields: [forumId], references: [id])
-  forumId String
+  forum   Forum  @relation(fields: [forumId], references: [id], onDelete: Cascade)
+  forumId String @map("forum_id") @db.Uuid
 
   @@index([forumId])
   @@index([createdAt])
+  @@map("forum_comments")
 }
 
 model ForumLike {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  likedBy   User   @relation(fields: [likedById], references: [id])
-  likedById String
+  likedBy   User   @relation(fields: [likedById], references: [id], onDelete: Cascade)
+  likedById String @map("liked_by_id") @db.Uuid
 
-  forum   Forum  @relation(fields: [forumId], references: [id])
-  forumId String
+  forum   Forum  @relation(fields: [forumId], references: [id], onDelete: Cascade)
+  forumId String @map("forum_id") @db.Uuid
 
   @@unique([forumId, likedById])
   @@index([forumId])
+  @@map("forum_likes")
 }
 
 model News {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid()) @db.Uuid
   title     String
   content   String   @db.Text
   date      DateTime @default(now())
-  imageUrl  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  imageUrl  String?  @map("image_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   postedBy   User   @relation(fields: [postedById], references: [id])
-  postedById String
+  postedById String @map("posted_by_id") @db.Uuid
 
   @@index([createdAt])
   @@index([date])
+  @@map("news")
 }
