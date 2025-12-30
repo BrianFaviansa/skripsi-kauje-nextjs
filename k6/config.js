@@ -9,15 +9,22 @@ export const TEST_USER = {
   password: "password123",
 };
 
-// Foreign Keys - Ganti dengan CUID yang valid dari database kamu
+// Foreign Keys - UUIDs dari database kauje_db (Shared with Laravel)
+// Jalankan query ini untuk mendapatkan ID setelah seeding:
+// docker compose exec db psql -U postgres -d kauje_db -c "SELECT id FROM provinces LIMIT 1;"
+// docker compose exec db psql -U postgres -d kauje_db -c "SELECT id FROM cities LIMIT 1;"
+// docker compose exec db psql -U postgres -d kauje_db -c "SELECT id FROM faculties LIMIT 1;"
+// docker compose exec db psql -U postgres -d kauje_db -c "SELECT id FROM majors LIMIT 1;"
+// docker compose exec db psql -U postgres -d kauje_db -c "SELECT id FROM job_fields LIMIT 1;"
+// docker compose exec db psql -U postgres -d kauje_db -c "SELECT id FROM collaboration_fields LIMIT 1;"
 export const FOREIGN_KEYS = {
-  provinceId: "cmjnolqjf00353hqyeq7b452h",
-  cityId: "cmjnolqxe003h3hqy6clw6e58",
-  facultyId: "cmjnolp4v00033hqyyk8fuj5x",
-  majorId: "cmjnolp7t000l3hqyv7brqc52",
-  roleId: "GANTI_DENGAN_ROLE_ID", // optional
-  jobFieldId: "cmjnolpdj002p3hqydkyb1sgv",
-  collaborationFieldId: "cmjnolper002z3hqykh9zfcft",
+  provinceId: "REPLACE_WITH_PROVINCE_UUID",
+  cityId: "REPLACE_WITH_CITY_UUID",
+  facultyId: "REPLACE_WITH_FACULTY_UUID",
+  majorId: "REPLACE_WITH_MAJOR_UUID",
+  roleId: null, // optional
+  jobFieldId: "REPLACE_WITH_JOB_FIELD_UUID",
+  collaborationFieldId: "REPLACE_WITH_COLLABORATION_FIELD_UUID",
 };
 
 // Load test options
