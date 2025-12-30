@@ -10,9 +10,9 @@ export const createJobSchema = z.object({
   openUntil: z.coerce.date(),
   registrationLink: z.string().url().optional().or(z.literal("")),
   imageUrl: z.string().optional().or(z.literal("")),
-  provinceId: z.cuid(),
-  cityId: z.cuid(),
-  jobFieldId: z.cuid(),
+  provinceId: z.uuid(),
+  cityId: z.uuid(),
+  jobFieldId: z.uuid(),
 });
 
 export const updateJobSchema = createJobSchema.partial();
@@ -20,9 +20,9 @@ export const updateJobSchema = createJobSchema.partial();
 export const getJobQuerySchema = z.object({
   q: z.string().optional(),
   jobType: z.enum(JobType).optional(),
-  provinceId: z.cuid().optional(),
-  cityId: z.cuid().optional(),
-  jobFieldId: z.cuid().optional(),
+  provinceId: z.uuid().optional(),
+  cityId: z.uuid().optional(),
+  jobFieldId: z.uuid().optional(),
   company: z.string().optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),

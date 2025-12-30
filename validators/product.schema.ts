@@ -16,7 +16,7 @@ export const getProductQuerySchema = z.object({
   category: z.enum(ProductCategory).optional(),
   minPrice: z.coerce.number().positive().optional(),
   maxPrice: z.coerce.number().positive().optional(),
-  postedById: z.cuid().optional(),
+  postedById: z.uuid().optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),
   sortBy: z.enum(["name", "price", "createdAt"]).default("createdAt"),

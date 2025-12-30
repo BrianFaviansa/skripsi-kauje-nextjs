@@ -173,8 +173,8 @@ export class UserService {
         role: { connect: { id: finalRoleId } },
         province: { connect: { id: provinceId } },
         city: { connect: { id: cityId } },
-        ...(facultyId ? { faculty: { connect: { id: facultyId } } } : {}),
-        ...(majorId ? { major: { connect: { id: majorId } } } : {}),
+        faculty: { connect: { id: facultyId } },
+        major: { connect: { id: majorId } },
       },
       include: { role: true },
     });

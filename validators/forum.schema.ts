@@ -11,7 +11,7 @@ export const updateForumSchema = createForumSchema.partial();
 
 export const getForumQuerySchema = z.object({
   q: z.string().optional(),
-  postedById: z.cuid().optional(),
+  postedById: z.uuid().optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),
   sortBy: z.enum(["title", "createdAt"]).default("createdAt"),
