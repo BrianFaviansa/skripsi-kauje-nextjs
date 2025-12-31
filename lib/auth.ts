@@ -53,5 +53,8 @@ export const hashPassword = async (password: string) => {
 };
 
 export const comparePassword = async (plain: string, hashed: string) => {
-  return await bcrypt.compare(plain, hashed);
+  // PHP bcrypt uses $2y$ prefix, Node.js bcrypt expects $2a$ or $2b$
+  // Convert $2y$ to $2a$ for compatibility
+  const normalizedHash = hashed.replace(/^\$2y\$/, "$2a$");
+  return await bcrypt.compare(plain, normalizedHash);
 };
