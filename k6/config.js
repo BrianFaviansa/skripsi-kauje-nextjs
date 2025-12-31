@@ -18,13 +18,13 @@ export const TEST_USER = {
 // docker compose exec db psql -U postgres -d kauje_db -c "SELECT id FROM job_fields LIMIT 1;"
 // docker compose exec db psql -U postgres -d kauje_db -c "SELECT id FROM collaboration_fields LIMIT 1;"
 export const FOREIGN_KEYS = {
-  provinceId: "REPLACE_WITH_PROVINCE_UUID",
-  cityId: "REPLACE_WITH_CITY_UUID",
-  facultyId: "REPLACE_WITH_FACULTY_UUID",
-  majorId: "REPLACE_WITH_MAJOR_UUID",
-  roleId: null, // optional
-  jobFieldId: "REPLACE_WITH_JOB_FIELD_UUID",
-  collaborationFieldId: "REPLACE_WITH_COLLABORATION_FIELD_UUID",
+  provinceId: "019b72b6-e20a-7275-8792-8084a52c594c",
+  cityId: "019b72b6-e217-7117-8233-6d290699f3aa",
+  facultyId: "019b72b6-e1b8-7299-b5b1-6c2bf099c1a9",
+  majorId: "019b72b7-3105-7340-a12c-0c8df50cf892",
+  roleId: "019b72b6-e1b3-7337-a623-84ae06900878",
+  jobFieldId: "019b72b6-e1d1-7266-ac29-bcf9a7e5eb0a",
+  collaborationFieldId: "019b72b6-e1e2-70c1-aee2-613d501410b5",
 };
 
 // Load test options
