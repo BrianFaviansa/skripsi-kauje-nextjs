@@ -34,7 +34,7 @@ export const OPTIONS = {
     vus: 1,
     duration: "30s",
   },
-  // Load test - gradual ramp up to 100 VUs (3 minutes total)
+  // Load test - gradual ramp up to 100 VUs (3 minutes total) - FOR VPS
   load: {
     stages: [
       { duration: "30s", target: 50 }, // ramp up to 50 users
@@ -42,6 +42,16 @@ export const OPTIONS = {
       { duration: "1m", target: 100 }, // stay at 100 users (steady state)
       { duration: "30s", target: 50 }, // ramp down to 50 users
       { duration: "30s", target: 0 }, // ramp down to 0
+    ],
+  },
+  // Load test for local development - lower VUs (1.5 minutes total)
+  loadDev: {
+    stages: [
+      { duration: "15s", target: 10 }, // ramp up to 10 users
+      { duration: "15s", target: 20 }, // ramp up to 20 users
+      { duration: "30s", target: 20 }, // stay at 20 users (steady state)
+      { duration: "15s", target: 10 }, // ramp down to 10 users
+      { duration: "15s", target: 0 }, // ramp down to 0
     ],
   },
 };

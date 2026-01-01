@@ -20,19 +20,11 @@ datasource db {
 // VerificationStatus now stored as String to match Laravel
 // Valid values: PENDING, VERIFIED, REJECTED
 
-enum JobType {
-  LOKER
-  MAGANG
+// JobType now stored as String to match Laravel
+// Valid values: LOKER, MAGANG
 
-  @@map("job_type")
-}
-
-enum ProductCategory {
-  JASA
-  PRODUK
-
-  @@map("product_category")
-}
+// ProductCategory now stored as String to match Laravel
+// Valid values: JASA, PRODUK
 
 // ============================================
 // BASE MODELS
@@ -187,7 +179,7 @@ model Job {
   title            String
   content          String   @db.Text
   company          String
-  jobType          JobType  @map("job_type")
+  jobType          String   @map("job_type")
   openFrom         DateTime @map("open_from")
   openUntil        DateTime @map("open_until")
   registrationLink String?  @map("registration_link")
