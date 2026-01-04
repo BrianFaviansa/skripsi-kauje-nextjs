@@ -16,7 +16,6 @@ export const options = {
 };
 
 export function setup() {
-  // Login untuk mendapatkan token
   const loginRes = http.post(
     `${BASE_URL}/auth/login`,
     JSON.stringify({
@@ -42,7 +41,7 @@ export default function (data) {
 
   const timestamp = Date.now();
   const today = new Date().toISOString().split("T")[0];
-  let createdNewsId = ""; // Local variable for this iteration
+  let createdNewsId = ""; 
 
   // CREATE
   group("News - Create", function () {

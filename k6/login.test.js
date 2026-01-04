@@ -25,7 +25,6 @@ export const options = {
 };
 
 export function setup() {
-  // Login untuk mendapatkan token
   const loginRes = http.post(
     `${BASE_URL}/auth/login`,
     JSON.stringify({

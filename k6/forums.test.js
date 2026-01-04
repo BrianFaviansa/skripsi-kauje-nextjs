@@ -16,7 +16,6 @@ export const options = {
 };
 
 export function setup() {
-  // Login untuk mendapatkan token
   const loginRes = http.post(
     `${BASE_URL}/auth/login`,
     JSON.stringify({
@@ -41,8 +40,8 @@ export default function (data) {
   };
 
   const timestamp = Date.now();
-  let createdForumId = ""; // Local variable for this iteration
-  let createdCommentId = ""; // Local variable for this iteration
+  let createdForumId = "";
+  let createdCommentId = "";
 
   // CREATE FORUM
   group("Forums - Create", function () {
@@ -202,7 +201,7 @@ export default function (data) {
 
     sleep(1);
 
-    // UNLIKE FORUM (by calling like again to toggle)
+    // UNLIKE FORUM 
     group("Forums - Unlike", function () {
       const res = http.post(`${BASE_URL}/forums/${createdForumId}/like`, null, {
         headers: authHeaders,

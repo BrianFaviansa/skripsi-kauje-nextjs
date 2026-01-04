@@ -23,22 +23,18 @@ export const options = {
 };
 
 export default function () {
-  // Generate guaranteed unique values: VU + ITER ensures uniqueness across all VUs
-  const vuPad = String(__VU).padStart(3, "0"); // 001-100
-  const iterPad = String(__ITER).padStart(4, "0"); // 0000-9999
+  const vuPad = String(__VU).padStart(3, "0"); 
+  const iterPad = String(__ITER).padStart(4, "0"); 
   const timestamp = Date.now();
   const microRandom = Math.floor(Math.random() * 10000)
     .toString()
     .padStart(4, "0");
 
-  // NIM: 10 digits - VU (padded 3) + ITER (padded 3) + random (4)
   const randomNim = `${vuPad}${String(__ITER).padStart(3, "0")}${microRandom}`;
-  // Phone: 08 + VU (3) + ITER (3) + random (4) = 12 digits total (08 + 10)
   const randomPhone = `08${vuPad}${String(__ITER).padStart(
     3,
     "0"
   )}${microRandom}`;
-  // Email: fully unique
   const randomEmail = `k6_v${__VU}_i${__ITER}_${timestamp}@test.com`;
   const uniqueId = `${vuPad}${iterPad}${timestamp}`;
 
@@ -74,7 +70,6 @@ export default function () {
     },
   });
 
-  // Debug: log first few failures
   if (!success && __ITER < 3) {
     console.log(`Register failed - VU: ${__VU}, ITER: ${__ITER}`);
     console.log(`Status: ${res.status}, Body: ${res.body}`);

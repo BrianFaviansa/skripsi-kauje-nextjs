@@ -16,7 +16,6 @@ export const options = {
 };
 
 export function setup() {
-  // Login untuk mendapatkan token
   const loginRes = http.post(
     `${BASE_URL}/auth/login`,
     JSON.stringify({
@@ -41,7 +40,7 @@ export default function (data) {
   };
 
   const timestamp = Date.now();
-  let createdProductId = ""; // Local variable for this iteration
+  let createdProductId = ""; 
 
   // CREATE
   group("Products - Create", function () {
@@ -50,7 +49,7 @@ export default function (data) {
       description:
         "Ini adalah deskripsi produk untuk testing dengan k6 load testing tool. Produk berkualitas tinggi.",
       price: 150000,
-      category: "PRODUK", // atau "JASA"
+      category: "PRODUK", 
       imageUrl: "",
     });
 

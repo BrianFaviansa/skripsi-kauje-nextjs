@@ -17,7 +17,6 @@ export const options = {
 };
 
 export function setup() {
-  // Login untuk mendapatkan token
   const loginRes = http.post(
     `${BASE_URL}/auth/login`,
     JSON.stringify({
@@ -46,7 +45,7 @@ export default function (data) {
   const nextMonth = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     .toISOString()
     .split("T")[0];
-  let createdJobId = ""; // Local variable for this iteration
+  let createdJobId = ""; 
 
   // CREATE
   group("Jobs - Create", function () {
@@ -55,7 +54,7 @@ export default function (data) {
       content:
         "Deskripsi lowongan kerja untuk testing dengan k6 load testing. Kami mencari kandidat yang berpengalaman.",
       company: "PT K6 Testing Indonesia",
-      jobType: "LOKER", // Sesuaikan dengan enum JobType
+      jobType: "LOKER", 
       openFrom: today,
       openUntil: nextMonth,
       registrationLink: "https://example.com/apply",

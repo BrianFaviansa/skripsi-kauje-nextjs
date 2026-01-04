@@ -17,7 +17,6 @@ export const options = {
 };
 
 export function setup() {
-  // Login untuk mendapatkan token
   const loginRes = http.post(
     `${BASE_URL}/auth/login`,
     JSON.stringify({
@@ -42,7 +41,7 @@ export default function (data) {
   };
 
   const timestamp = Date.now();
-  let createdCollaborationId = ""; // Local variable for this iteration
+  let createdCollaborationId = ""; 
 
   // CREATE
   group("Collaborations - Create", function () {
