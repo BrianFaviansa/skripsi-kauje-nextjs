@@ -9,7 +9,7 @@ import { ZodError } from "zod";
 
 export async function GET(
   req: NextRequest,
-  props: { params: Promise<{ id: string }> }
+  props: { params: Promise<{ id: string }> },
 ) {
   const params = await props.params;
   try {
@@ -22,20 +22,20 @@ export async function GET(
 
     return NextResponse.json(
       { message: "Comments retrieved successfully", ...result },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error: any) {
     console.error("Get comments error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function POST(
   req: NextRequest,
-  props: { params: Promise<{ id: string }> }
+  props: { params: Promise<{ id: string }> },
 ) {
   const params = await props.params;
   try {
@@ -56,18 +56,18 @@ export async function POST(
     const newComment = await ForumService.createComment(
       payload.userId,
       params.id,
-      validatedData
+      validatedData,
     );
 
     return NextResponse.json(
       { message: "Comment created successfully", data: newComment },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error: any) {
     if (error instanceof ZodError) {
       return NextResponse.json(
         { message: "Validation error", errors: error.flatten() },
-        { status: 400 }
+        { status: 400 },
       );
     }
     if (error.message === "Forum not found") {
@@ -76,7 +76,7 @@ export async function POST(
     console.error("Create comment error:", error);
     return NextResponse.json(
       { message: "Internal server error", error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,12 +1,3 @@
-/**
- * Login Module Load Test - Next.js
- *
- * Test scenarios:
- * - Login
- * - Me (get current user)
- * - Refresh Token
- */
-
 import http from "k6/http";
 import { check, sleep, group } from "k6";
 import {

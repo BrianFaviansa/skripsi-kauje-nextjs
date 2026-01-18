@@ -13,22 +13,7 @@ datasource db {
   provider = "postgresql"
 }
 
-// ============================================
-// ENUMS - Matching Laravel enum values
-// ============================================
-
-// VerificationStatus now stored as String to match Laravel
-// Valid values: PENDING, VERIFIED, REJECTED
-
-// JobType now stored as String to match Laravel
-// Valid values: LOKER, MAGANG
-
-// ProductCategory now stored as String to match Laravel
-// Valid values: JASA, PRODUK
-
-// ============================================
 // BASE MODELS
-// ============================================
 
 model Role {
   id        String   @id @default(uuid()) @db.Uuid
@@ -117,9 +102,7 @@ model CollaborationField {
   @@map("collaboration_fields")
 }
 
-// ============================================
 // USER MODEL
-// ============================================
 
 model User {
   id                  String   @id @default(uuid()) @db.Uuid
@@ -170,9 +153,7 @@ model User {
   @@map("users")
 }
 
-// ============================================
 // FEATURE MODELS
-// ============================================
 
 model Job {
   id               String   @id @default(uuid()) @db.Uuid

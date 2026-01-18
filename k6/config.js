@@ -20,12 +20,10 @@ export const FOREIGN_KEYS = {
 
 // Load test options
 export const OPTIONS = {
-  // Smoke test - minimal load to verify system works
   smoke: {
     vus: 1,
     duration: "30s",
   },
-  // Load test - 100 VUs, 3 minutes total
   load: {
     stages: [
       { duration: "30s", target: 50 },
@@ -37,25 +35,20 @@ export const OPTIONS = {
   },
 };
 
-// Thresholds for performance
 export const THRESHOLDS = {
   http_req_duration: ["p(95)<1000"], 
   http_req_failed: ["rate<0.10"], 
 };
 
-// Custom summary handler 
 export function handleSummary(data) {
   const metrics = data.metrics;
 
-  // Response Time (avg)
   const avgResponseTime =
     metrics.http_req_duration?.values?.avg?.toFixed(2) || "N/A";
 
-  // P95 Latency
   const p95Latency =
     metrics.http_req_duration?.values?.["p(95)"]?.toFixed(2) || "N/A";
 
-  // Throughput (requests per second)
   const totalRequests = metrics.http_reqs?.values?.count || 0;
   const totalDuration =
     (metrics.iteration_duration?.values?.count *
@@ -66,7 +59,6 @@ export function handleSummary(data) {
     (data.state.testRunDurationMs / 1000)
   ).toFixed(2);
 
-  // Success Rate
   const failedRate = metrics.http_req_failed?.values?.rate || 0;
   const successRate = ((1 - failedRate) * 100).toFixed(2);
 

@@ -1,10 +1,3 @@
-/**
- * Register Module Load Test - Next.js
- *
- * Test scenario: User Registration only
- * Generates unique NIM, email, and phone for each request
- */
-
 import http from "k6/http";
 import { check, sleep } from "k6";
 import {

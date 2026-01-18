@@ -60,7 +60,6 @@ export default function (data) {
       "create forum status 201": (r) => r.status === 201,
     });
 
-    // Extract ID if successful
     if (res.status === 201) {
       try {
         const body = JSON.parse(res.body);
@@ -151,7 +150,6 @@ export default function (data) {
         "create comment status 201": (r) => r.status === 201,
       });
 
-      // Extract ID if successful
       if (res.status === 201) {
         try {
           const body = JSON.parse(res.body);

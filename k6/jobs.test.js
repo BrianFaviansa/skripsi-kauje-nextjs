@@ -72,7 +72,6 @@ export default function (data) {
       "create job status 201": (r) => r.status === 201,
     });
 
-    // Extract ID if successful
     if (res.status === 201) {
       try {
         const body = JSON.parse(res.body);
