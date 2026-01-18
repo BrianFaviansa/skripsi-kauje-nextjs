@@ -75,7 +75,7 @@ export default function (data) {
     });
   });
 
-  sleep(0.5);
+  sleep(1);
 
   // Me Test
   group("Me", function () {
@@ -97,7 +97,7 @@ export default function (data) {
     });
   });
 
-  sleep(0.5);
+  sleep(1);
 
   // Refresh Token Test
   group("Refresh Token", function () {
@@ -118,7 +118,7 @@ export default function (data) {
     }
   });
 
-  sleep(0.5);
+  sleep(1);
 }
 
 export function teardown() {

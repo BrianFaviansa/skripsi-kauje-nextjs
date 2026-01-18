@@ -68,7 +68,7 @@ export default function () {
     console.log(`Status: ${res.status}, Body: ${res.body}`);
   }
 
-  sleep(0.5);
+  sleep(1);
 }
 
 export function teardown() {
