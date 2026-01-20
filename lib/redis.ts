@@ -11,14 +11,13 @@ const redis =
     port: parseInt(process.env.REDIS_PORT || "6379"),
     maxRetriesPerRequest: 3,
     enableReadyCheck: true,
-    lazyConnect: true,
+    connectTimeout: 5000,
+    retryStrategy: (times) => {
+      if (times > 3) return null;
+      return Math.min(times * 100, 1000);
+    },
   });
 
-if (process.env.NODE_ENV !== "production") globalForRedis.redis = redis;
-
-// Connect on first use
-redis.connect().catch(() => {
-  console.warn("Redis connection failed, caching disabled");
-});
+globalForRedis.redis = redis;
 
 export default redis;
