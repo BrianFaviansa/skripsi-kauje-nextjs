@@ -1,5 +1,12 @@
 import prisma from "@/lib/prisma";
 import {
+  cacheGet,
+  cacheSet,
+  cacheDeletePattern,
+  CacheKeys,
+  CacheTTL,
+} from "@/lib/cache";
+import {
   createJobSchema,
   updateJobSchema,
   getJobQuerySchema,
@@ -23,6 +30,12 @@ export class JobService {
       sortBy = "createdAt",
       sortOrder = "desc",
     } = query;
+
+    const cacheKey = CacheKeys.jobsList(page, limit, q);
+    const cached = await cacheGet<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
 
     const skip = (page - 1) * limit;
 
@@ -72,7 +85,7 @@ export class JobService {
       city: job.city.name,
     }));
 
-    return {
+    const result = {
       data: simplifiedJobs,
       meta: {
         total,
@@ -81,9 +94,19 @@ export class JobService {
         totalPages: Math.ceil(total / limit),
       },
     };
+
+    await cacheSet(cacheKey, result, CacheTTL.MEDIUM);
+
+    return result;
   }
 
   static async getById(id: string) {
+    const cacheKey = CacheKeys.jobsItem(id);
+    const cached = await cacheGet<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const job = await prisma.job.findUnique({
       where: { id },
       include: {
@@ -102,53 +125,66 @@ export class JobService {
 
     if (!job) throw new Error("Job not found");
 
-    return {
+    const result = {
       ...job,
       jobField: job.jobField.name,
       province: job.province.name,
       city: job.city.name,
     };
+
+    await cacheSet(cacheKey, result, CacheTTL.LONG);
+
+    return result;
   }
 
   static async create(userId: string, data: CreateJobData) {
-    return await prisma.job.create({
+    const job = await prisma.job.create({
       data: {
         ...data,
         postedById: userId,
       },
     });
+
+    await cacheDeletePattern(CacheKeys.jobsPattern());
+
+    return job;
   }
 
   static async update(
     userId: string,
     role: string,
     jobId: string,
-    data: UpdateJobData
+    data: UpdateJobData,
   ) {
     const job = await prisma.job.findUnique({ where: { id: jobId } });
     if (!job) throw new Error("Job not found");
 
-    // Authorization: Owner or Admin
     if (role !== "Admin" && job.postedById !== userId) {
       throw new Error("Forbidden: You are not authorized to update this job");
     }
 
-    return await prisma.job.update({
+    const updated = await prisma.job.update({
       where: { id: jobId },
       data,
     });
+
+    await cacheDeletePattern(CacheKeys.jobsPattern());
+
+    return updated;
   }
 
   static async delete(userId: string, role: string, jobId: string) {
     const job = await prisma.job.findUnique({ where: { id: jobId } });
     if (!job) throw new Error("Job not found");
 
-    // Authorization: Owner or Admin
     if (role !== "Admin" && job.postedById !== userId) {
       throw new Error("Forbidden: You are not authorized to delete this job");
     }
 
     await prisma.job.delete({ where: { id: jobId } });
+
+    await cacheDeletePattern(CacheKeys.jobsPattern());
+
     return { message: "Job deleted successfully" };
   }
 }

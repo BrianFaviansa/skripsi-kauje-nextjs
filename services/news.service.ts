@@ -1,5 +1,12 @@
 import prisma from "@/lib/prisma";
 import {
+  cacheGet,
+  cacheSet,
+  cacheDeletePattern,
+  CacheKeys,
+  CacheTTL,
+} from "@/lib/cache";
+import {
   createNewsSchema,
   updateNewsSchema,
   getNewsQuerySchema,
@@ -21,6 +28,12 @@ export class NewsService {
       sortOrder = "desc",
     } = query;
 
+    const cacheKey = CacheKeys.newsList(page, limit, q);
+    const cached = await cacheGet<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const skip = (page - 1) * limit;
 
     const whereClause: any = {};
@@ -32,7 +45,6 @@ export class NewsService {
       ];
     }
 
-    // Date range filter
     if (startDate !== undefined || endDate !== undefined) {
       whereClause.date = {};
       if (startDate !== undefined) whereClause.date.gte = startDate;
@@ -58,7 +70,7 @@ export class NewsService {
       prisma.news.count({ where: whereClause }),
     ]);
 
-    return {
+    const result = {
       data: news,
       meta: {
         total,
@@ -67,9 +79,19 @@ export class NewsService {
         totalPages: Math.ceil(total / limit),
       },
     };
+
+    await cacheSet(cacheKey, result, CacheTTL.MEDIUM);
+
+    return result;
   }
 
   static async getById(id: string) {
+    const cacheKey = CacheKeys.newsItem(id);
+    const cached = await cacheGet<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const news = await prisma.news.findUnique({
       where: { id },
       include: {
@@ -85,11 +107,12 @@ export class NewsService {
 
     if (!news) throw new Error("News not found");
 
+    await cacheSet(cacheKey, news, CacheTTL.LONG);
+
     return news;
   }
 
   static async create(userId: string, role: string, data: CreateNewsData) {
-    // Only admin can create news
     if (role !== "Admin") {
       throw new Error("Forbidden: Only admins can create news");
     }
@@ -103,18 +126,21 @@ export class NewsService {
 
     if (data.imageUrl) createData.imageUrl = data.imageUrl;
 
-    return await prisma.news.create({
+    const news = await prisma.news.create({
       data: createData,
     });
+
+    await cacheDeletePattern(CacheKeys.newsPattern());
+
+    return news;
   }
 
   static async update(
     userId: string,
     role: string,
     newsId: string,
-    data: UpdateNewsData
+    data: UpdateNewsData,
   ) {
-    // Only admin can update news
     if (role !== "Admin") {
       throw new Error("Forbidden: Only admins can update news");
     }
@@ -131,14 +157,17 @@ export class NewsService {
     if (data.imageUrl !== undefined)
       updateData.imageUrl = data.imageUrl || null;
 
-    return await prisma.news.update({
+    const updated = await prisma.news.update({
       where: { id: newsId },
       data: updateData,
     });
+
+    await cacheDeletePattern(CacheKeys.newsPattern());
+
+    return updated;
   }
 
   static async delete(userId: string, role: string, newsId: string) {
-    // Only admin can delete news
     if (role !== "Admin") {
       throw new Error("Forbidden: Only admins can delete news");
     }
@@ -149,6 +178,9 @@ export class NewsService {
     if (!news) throw new Error("News not found");
 
     await prisma.news.delete({ where: { id: newsId } });
+
+    await cacheDeletePattern(CacheKeys.newsPattern());
+
     return { message: "News deleted successfully" };
   }
 }

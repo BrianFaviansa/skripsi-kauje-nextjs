@@ -1,4 +1,11 @@
 import prisma from "@/lib/prisma";
+import {
+  cacheGet,
+  cacheSet,
+  cacheDeletePattern,
+  CacheKeys,
+  CacheTTL,
+} from "@/lib/cache";
 import { createUserSchema, updateUserSchema } from "@/validators/user.schema";
 import { z } from "zod";
 import { hashPassword } from "@/lib/auth";
@@ -21,6 +28,13 @@ export class UserService {
       sortBy = "createdAt",
       sortOrder = "desc",
     } = query;
+
+    // Try cache first
+    const cacheKey = CacheKeys.usersList(page, limit, q);
+    const cached = await cacheGet<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
 
     const skip = (page - 1) * limit;
 
@@ -91,7 +105,7 @@ export class UserService {
       };
     });
 
-    return {
+    const result = {
       data: safeUsers,
       meta: {
         total,
@@ -100,9 +114,21 @@ export class UserService {
         totalPages: Math.ceil(total / limit),
       },
     };
+
+    // Cache the result
+    await cacheSet(cacheKey, result, CacheTTL.MEDIUM);
+
+    return result;
   }
 
   static async getById(id: string) {
+    // Try cache first
+    const cacheKey = CacheKeys.usersItem(id);
+    const cached = await cacheGet<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const user = await prisma.user.findUnique({
       where: { id },
       include: {
@@ -117,12 +143,16 @@ export class UserService {
     if (!user) throw new Error("User not found");
 
     const { password, refreshToken, ...safeUser } = user;
+
+    // Cache the result
+    await cacheSet(cacheKey, safeUser, CacheTTL.LONG);
+
     return safeUser;
   }
 
   static async create(
     data: CreateUserData,
-    verificationStatus: "PENDING" | "VERIFIED" = "PENDING"
+    verificationStatus: "PENDING" | "VERIFIED" = "PENDING",
   ) {
     const {
       email,
@@ -179,6 +209,9 @@ export class UserService {
       include: { role: true },
     });
 
+    // Invalidate list cache
+    await cacheDeletePattern(CacheKeys.usersPattern());
+
     const { password: _, refreshToken: __, ...safeUser } = newUser;
     return safeUser;
   }
@@ -214,6 +247,9 @@ export class UserService {
       include: { role: true },
     });
 
+    // Invalidate caches
+    await cacheDeletePattern(CacheKeys.usersPattern());
+
     const { password: _, refreshToken: __, ...safeUser } = updatedUser;
     return safeUser;
   }
@@ -223,6 +259,10 @@ export class UserService {
     if (!user) throw new Error("User not found");
 
     await prisma.user.delete({ where: { id } });
+
+    // Invalidate caches
+    await cacheDeletePattern(CacheKeys.usersPattern());
+
     return { message: "User deleted successfully" };
   }
 }

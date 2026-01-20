@@ -1,0 +1,74 @@
+No,Fitur,WMC,RFC,LCOM,CBO,DIT,NOC
+1,Register,8,12,0,5,0,0
+2,Login,5,10,0,5,0,0
+3,Collaboration,12,13,0,4,0,0
+4,Forum,28,32,0,4,0,0
+5,Job,12,13,0,4,0,0
+6,News,15,14,0,4,0,0
+7,Product,13,14,0,4,0,0
+8,User,16,15,0,5,0,0
+,Total,109,123,0,35,0,0
+,Rata-rata,13.6,15.4,0,4.4,0,0
+
+Detail WMC per Metode:
+Fitur,Metode,Cyclomatic Complexity
+Register,register(),5
+Register,POST(),3
+Login,login(),3
+Login,POST(),2
+Collaboration,getAll(),4
+Collaboration,getById(),2
+Collaboration,create(),2
+Collaboration,update(),2
+Collaboration,delete(),2
+Forum,getAll(),3
+Forum,getById(),3
+Forum,create(),2
+Forum,update(),5
+Forum,delete(),3
+Forum,getComments(),1
+Forum,createComment(),2
+Forum,updateComment(),3
+Forum,deleteComment(),3
+Forum,toggleLike(),2
+Forum,getLikes(),1
+Job,getAll(),6
+Job,getById(),2
+Job,create(),1
+Job,update(),1
+Job,delete(),2
+News,getAll(),4
+News,getById(),2
+News,create(),3
+News,update(),3
+News,delete(),3
+Product,getAll(),5
+Product,getById(),2
+Product,create(),2
+Product,update(),2
+Product,delete(),2
+User,getAll(),7
+User,getById(),2
+User,create(),5
+User,update(),0
+User,delete(),2
+
+CBO Dependencies per Fitur:
+Fitur,Dependencies
+Register,"@/lib/prisma, @/lib/auth, @/validators/auth.schema, zod, next/server"
+Login,"@/lib/prisma, @/lib/auth, @/validators/auth.schema, zod, next/server"
+Collaboration,"@/lib/prisma, @/validators/collaboration.schema, zod, @/lib/auth"
+Forum,"@/lib/prisma, @/validators/forum.schema, zod, @/lib/auth"
+Job,"@/lib/prisma, @/validators/job.schema, zod, @/lib/auth"
+News,"@/lib/prisma, @/validators/news.schema, zod, @/lib/auth"
+Product,"@/lib/prisma, @/validators/product.schema, zod, @/lib/auth"
+User,"@/lib/prisma, @/lib/auth, @/validators/user.schema, zod, next/server"
+
+Threshold Values:
+Metric,Threshold,Status
+WMC,< 20,Good
+RFC,< 50,Good
+LCOM,0,Perfect
+CBO,< 10,Good
+DIT,0-3,Good
+NOC,0-5,Good

@@ -42,5 +42,3 @@ next-env.d.ts
 
 /app/generated/prisma
 /docs
-
-ck_metrics*

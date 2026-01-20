@@ -1,5 +1,12 @@
 import prisma from "@/lib/prisma";
 import {
+  cacheGet,
+  cacheSet,
+  cacheDeletePattern,
+  CacheKeys,
+  CacheTTL,
+} from "@/lib/cache";
+import {
   createProductSchema,
   updateProductSchema,
   getProductQuerySchema,
@@ -23,6 +30,12 @@ export class ProductService {
       sortOrder = "desc",
     } = query;
 
+    const cacheKey = CacheKeys.productsList(page, limit, q);
+    const cached = await cacheGet<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const skip = (page - 1) * limit;
 
     const whereClause: any = {};
@@ -37,7 +50,6 @@ export class ProductService {
     if (category) whereClause.category = category;
     if (postedById) whereClause.postedById = postedById;
 
-    // Price range filter
     if (minPrice !== undefined || maxPrice !== undefined) {
       whereClause.price = {};
       if (minPrice !== undefined) whereClause.price.gte = minPrice;
@@ -63,7 +75,7 @@ export class ProductService {
       prisma.product.count({ where: whereClause }),
     ]);
 
-    return {
+    const result = {
       data: products,
       meta: {
         total,
@@ -72,9 +84,19 @@ export class ProductService {
         totalPages: Math.ceil(total / limit),
       },
     };
+
+    await cacheSet(cacheKey, result, CacheTTL.MEDIUM);
+
+    return result;
   }
 
   static async getById(id: string) {
+    const cacheKey = CacheKeys.productsItem(id);
+    const cached = await cacheGet<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const product = await prisma.product.findUnique({
       where: { id },
       include: {
@@ -90,6 +112,8 @@ export class ProductService {
 
     if (!product) throw new Error("Product not found");
 
+    await cacheSet(cacheKey, product, CacheTTL.LONG);
+
     return product;
   }
 
@@ -104,26 +128,29 @@ export class ProductService {
 
     if (data.imageUrl) createData.imageUrl = data.imageUrl;
 
-    return await prisma.product.create({
+    const product = await prisma.product.create({
       data: createData,
     });
+
+    await cacheDeletePattern(CacheKeys.productsPattern());
+
+    return product;
   }
 
   static async update(
     userId: string,
     role: string,
     productId: string,
-    data: UpdateProductData
+    data: UpdateProductData,
   ) {
     const product = await prisma.product.findUnique({
       where: { id: productId },
     });
     if (!product) throw new Error("Product not found");
 
-    // Authorization: Owner or Admin
     if (role !== "Admin" && product.postedById !== userId) {
       throw new Error(
-        "Forbidden: You are not authorized to update this product"
+        "Forbidden: You are not authorized to update this product",
       );
     }
 
@@ -136,10 +163,14 @@ export class ProductService {
     if (data.imageUrl !== undefined)
       updateData.imageUrl = data.imageUrl || null;
 
-    return await prisma.product.update({
+    const updated = await prisma.product.update({
       where: { id: productId },
       data: updateData,
     });
+
+    await cacheDeletePattern(CacheKeys.productsPattern());
+
+    return updated;
   }
 
   static async delete(userId: string, role: string, productId: string) {
@@ -148,14 +179,16 @@ export class ProductService {
     });
     if (!product) throw new Error("Product not found");
 
-    // Authorization: Owner or Admin
     if (role !== "Admin" && product.postedById !== userId) {
       throw new Error(
-        "Forbidden: You are not authorized to delete this product"
+        "Forbidden: You are not authorized to delete this product",
       );
     }
 
     await prisma.product.delete({ where: { id: productId } });
+
+    await cacheDeletePattern(CacheKeys.productsPattern());
+
     return { message: "Product deleted successfully" };
   }
 }

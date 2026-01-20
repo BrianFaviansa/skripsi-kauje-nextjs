@@ -1,5 +1,12 @@
 import prisma from "@/lib/prisma";
 import {
+  cacheGet,
+  cacheSet,
+  cacheDeletePattern,
+  CacheKeys,
+  CacheTTL,
+} from "@/lib/cache";
+import {
   createCollaborationSchema,
   updateCollaborationSchema,
   getCollaborationQuerySchema,
@@ -20,6 +27,12 @@ export class CollaborationService {
       sortBy = "createdAt",
       sortOrder = "desc",
     } = query;
+
+    const cacheKey = CacheKeys.collaborationsList(page, limit, q);
+    const cached = await cacheGet<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
 
     const skip = (page - 1) * limit;
 
@@ -61,7 +74,7 @@ export class CollaborationService {
       collaborationField: collaboration.collaborationField?.name || null,
     }));
 
-    return {
+    const result = {
       data: simplifiedCollaborations,
       meta: {
         total,
@@ -70,9 +83,21 @@ export class CollaborationService {
         totalPages: Math.ceil(total / limit),
       },
     };
+
+    // Cache the result
+    await cacheSet(cacheKey, result, CacheTTL.MEDIUM);
+
+    return result;
   }
 
   static async getById(id: string) {
+    // Try cache first
+    const cacheKey = CacheKeys.collaborationsItem(id);
+    const cached = await cacheGet<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const collaboration = await prisma.collaboration.findUnique({
       where: { id },
       include: {
@@ -89,10 +114,15 @@ export class CollaborationService {
 
     if (!collaboration) throw new Error("Collaboration not found");
 
-    return {
+    const result = {
       ...collaboration,
       collaborationField: collaboration.collaborationField?.name || null,
     };
+
+    // Cache the result
+    await cacheSet(cacheKey, result, CacheTTL.LONG);
+
+    return result;
   }
 
   static async create(userId: string, data: CreateCollaborationData) {
@@ -106,26 +136,29 @@ export class CollaborationService {
     if (data.collaborationFieldId)
       createData.collaborationFieldId = data.collaborationFieldId;
 
-    return await prisma.collaboration.create({
+    const collaboration = await prisma.collaboration.create({
       data: createData,
     });
+
+    await cacheDeletePattern(CacheKeys.collaborationsPattern());
+
+    return collaboration;
   }
 
   static async update(
     userId: string,
     role: string,
     collaborationId: string,
-    data: UpdateCollaborationData
+    data: UpdateCollaborationData,
   ) {
     const collaboration = await prisma.collaboration.findUnique({
       where: { id: collaborationId },
     });
     if (!collaboration) throw new Error("Collaboration not found");
 
-    // Authorization: Owner or Admin
     if (role !== "Admin" && collaboration.postedById !== userId) {
       throw new Error(
-        "Forbidden: You are not authorized to update this collaboration"
+        "Forbidden: You are not authorized to update this collaboration",
       );
     }
 
@@ -138,10 +171,14 @@ export class CollaborationService {
       updateData.collaborationFieldId = data.collaborationFieldId || null;
     }
 
-    return await prisma.collaboration.update({
+    const updated = await prisma.collaboration.update({
       where: { id: collaborationId },
       data: updateData,
     });
+
+    await cacheDeletePattern(CacheKeys.collaborationsPattern());
+
+    return updated;
   }
 
   static async delete(userId: string, role: string, collaborationId: string) {
@@ -150,14 +187,16 @@ export class CollaborationService {
     });
     if (!collaboration) throw new Error("Collaboration not found");
 
-    // Authorization: Owner or Admin
     if (role !== "Admin" && collaboration.postedById !== userId) {
       throw new Error(
-        "Forbidden: You are not authorized to delete this collaboration"
+        "Forbidden: You are not authorized to delete this collaboration",
       );
     }
 
     await prisma.collaboration.delete({ where: { id: collaborationId } });
+
+    await cacheDeletePattern(CacheKeys.collaborationsPattern());
+
     return { message: "Collaboration deleted successfully" };
   }
 }

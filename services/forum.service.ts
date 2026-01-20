@@ -1,5 +1,12 @@
 import prisma from "@/lib/prisma";
 import {
+  cacheGet,
+  cacheSet,
+  cacheDeletePattern,
+  CacheKeys,
+  CacheTTL,
+} from "@/lib/cache";
+import {
   createForumSchema,
   updateForumSchema,
   getForumQuerySchema,
@@ -24,6 +31,12 @@ export class ForumService {
       sortBy = "createdAt",
       sortOrder = "desc",
     } = query;
+
+    const cacheKey = CacheKeys.forumsList(page, limit, q);
+    const cached = await cacheGet<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
 
     const skip = (page - 1) * limit;
 
@@ -64,7 +77,7 @@ export class ForumService {
       prisma.forum.count({ where: whereClause }),
     ]);
 
-    return {
+    const result = {
       data: forums,
       meta: {
         total,
@@ -73,31 +86,42 @@ export class ForumService {
         totalPages: Math.ceil(total / limit),
       },
     };
+
+    await cacheSet(cacheKey, result, CacheTTL.MEDIUM);
+
+    return result;
   }
 
   static async getById(id: string, userId?: string) {
-    const forum = await prisma.forum.findUnique({
-      where: { id },
-      include: {
-        postedBy: {
-          select: {
-            id: true,
-            name: true,
-            profilePictureUrl: true,
+    const cacheKey = CacheKeys.forumsItem(id);
+    const cached = await cacheGet<any>(cacheKey);
+
+    let forum = cached;
+    if (!forum) {
+      forum = await prisma.forum.findUnique({
+        where: { id },
+        include: {
+          postedBy: {
+            select: {
+              id: true,
+              name: true,
+              profilePictureUrl: true,
+            },
+          },
+          _count: {
+            select: {
+              comments: true,
+              forumLikes: true,
+            },
           },
         },
-        _count: {
-          select: {
-            comments: true,
-            forumLikes: true,
-          },
-        },
-      },
-    });
+      });
 
-    if (!forum) throw new Error("Forum not found");
+      if (!forum) throw new Error("Forum not found");
 
-    // Check if current user has liked this forum
+      await cacheSet(cacheKey, forum, CacheTTL.LONG);
+    }
+
     let isLiked = false;
     if (userId) {
       const like = await prisma.forumLike.findUnique({
@@ -126,23 +150,26 @@ export class ForumService {
 
     if (data.imageUrl) createData.imageUrl = data.imageUrl;
 
-    return await prisma.forum.create({
+    const forum = await prisma.forum.create({
       data: createData,
     });
+
+    await cacheDeletePattern(CacheKeys.forumsPattern());
+
+    return forum;
   }
 
   static async update(
     userId: string,
     role: string,
     forumId: string,
-    data: UpdateForumData
+    data: UpdateForumData,
   ) {
     const forum = await prisma.forum.findUnique({
       where: { id: forumId },
     });
     if (!forum) throw new Error("Forum not found");
 
-    // Authorization: Owner or Admin
     if (role !== "Admin" && forum.postedById !== userId) {
       throw new Error("Forbidden: You are not authorized to update this forum");
     }
@@ -153,10 +180,14 @@ export class ForumService {
     if (data.imageUrl !== undefined)
       updateData.imageUrl = data.imageUrl || null;
 
-    return await prisma.forum.update({
+    const updated = await prisma.forum.update({
       where: { id: forumId },
       data: updateData,
     });
+
+    await cacheDeletePattern(CacheKeys.forumsPattern());
+
+    return updated;
   }
 
   static async delete(userId: string, role: string, forumId: string) {
@@ -165,19 +196,20 @@ export class ForumService {
     });
     if (!forum) throw new Error("Forum not found");
 
-    // Authorization: Owner or Admin
     if (role !== "Admin" && forum.postedById !== userId) {
       throw new Error("Forbidden: You are not authorized to delete this forum");
     }
 
     await prisma.forum.delete({ where: { id: forumId } });
+
+    await cacheDeletePattern(CacheKeys.forumsPattern());
+
     return { message: "Forum deleted successfully" };
   }
 
-  // Comment methods
   static async getComments(
     forumId: string,
-    query: z.infer<typeof getCommentsQuerySchema>
+    query: z.infer<typeof getCommentsQuerySchema>,
   ) {
     const { page = 1, limit = 10, sortOrder = "asc" } = query;
 
@@ -216,13 +248,12 @@ export class ForumService {
   static async createComment(
     userId: string,
     forumId: string,
-    data: CreateCommentData
+    data: CreateCommentData,
   ) {
-    // Check if forum exists
     const forum = await prisma.forum.findUnique({ where: { id: forumId } });
     if (!forum) throw new Error("Forum not found");
 
-    return await prisma.forumComment.create({
+    const comment = await prisma.forumComment.create({
       data: {
         content: data.content,
         postedById: userId,
@@ -238,23 +269,26 @@ export class ForumService {
         },
       },
     });
+
+    await cacheDeletePattern(CacheKeys.forumsPattern());
+
+    return comment;
   }
 
   static async updateComment(
     userId: string,
     role: string,
     commentId: string,
-    data: UpdateCommentData
+    data: UpdateCommentData,
   ) {
     const comment = await prisma.forumComment.findUnique({
       where: { id: commentId },
     });
     if (!comment) throw new Error("Comment not found");
 
-    // Authorization: Owner or Admin
     if (role !== "Admin" && comment.postedById !== userId) {
       throw new Error(
-        "Forbidden: You are not authorized to update this comment"
+        "Forbidden: You are not authorized to update this comment",
       );
     }
 
@@ -270,24 +304,23 @@ export class ForumService {
     });
     if (!comment) throw new Error("Comment not found");
 
-    // Authorization: Owner or Admin
     if (role !== "Admin" && comment.postedById !== userId) {
       throw new Error(
-        "Forbidden: You are not authorized to delete this comment"
+        "Forbidden: You are not authorized to delete this comment",
       );
     }
 
     await prisma.forumComment.delete({ where: { id: commentId } });
+
+    await cacheDeletePattern(CacheKeys.forumsPattern());
+
     return { message: "Comment deleted successfully" };
   }
 
-  // Like methods
   static async toggleLike(userId: string, forumId: string) {
-    // Check if forum exists
     const forum = await prisma.forum.findUnique({ where: { id: forumId } });
     if (!forum) throw new Error("Forum not found");
 
-    // Check if user already liked
     const existingLike = await prisma.forumLike.findUnique({
       where: {
         forumId_likedById: {
@@ -297,22 +330,25 @@ export class ForumService {
       },
     });
 
+    let result;
     if (existingLike) {
-      // Unlike
       await prisma.forumLike.delete({
         where: { id: existingLike.id },
       });
-      return { message: "Forum unliked", isLiked: false };
+      result = { message: "Forum unliked", isLiked: false };
     } else {
-      // Like
       await prisma.forumLike.create({
         data: {
           forumId,
           likedById: userId,
         },
       });
-      return { message: "Forum liked", isLiked: true };
+      result = { message: "Forum liked", isLiked: true };
     }
+
+    await cacheDeletePattern(CacheKeys.forumsPattern());
+
+    return result;
   }
 
   static async getLikes(forumId: string) {
