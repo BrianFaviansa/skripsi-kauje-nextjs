@@ -1,21 +1,21 @@
 // K6 Load Test Configuration
 
-export const BASE_URL = __ENV.API_URL || "http://43.228.215.252:3000/api";
+export const BASE_URL = __ENV.API_URL || "http://43.228.212.184:3000/api";
 
-// Test user credentials 
+// Test user credentials
 export const TEST_USER = {
   nim: "202410101014",
   password: "password123",
 };
 
 export const FOREIGN_KEYS = {
-  provinceId: "019b783f-b33a-7004-91da-c62a2b33096d",
-  cityId: "019b783f-b345-70a7-99ad-f380e7eb054b",
-  facultyId: "019b783f-b303-71e7-bdb7-a8468324ee67",
-  majorId: "019b7840-0185-71a6-8b04-f7c56ea1b1d0",
-  roleId: "019b783f-b2ff-7314-b244-83cbc5f145c1",
-  jobFieldId: "019b783f-b313-7337-afa0-91be3a383bef",
-  collaborationFieldId: "019b783f-b31e-72a5-9621-d262b371772a",
+  provinceId: "019bdc5f-999f-7322-bc3c-affaac1b2a5b",
+  cityId: "019bdc5f-99a9-7375-b09f-4cdb1a25d0cd",
+  facultyId: "019bdc5f-9932-725a-934d-c54e3904a48c",
+  majorId: "019bdc5f-ea12-71a8-8993-292b3feb2162",
+  roleId: "019bdc5f-992b-7068-a1bb-7e35a82eaaea",
+  jobFieldId: "019bdc5f-9954-700d-8fe5-8a39aac48076",
+  collaborationFieldId: "019bdc5f-996a-701b-8180-b372f681144a",
 };
 
 // Load test options
@@ -36,8 +36,8 @@ export const OPTIONS = {
 };
 
 export const THRESHOLDS = {
-  http_req_duration: ["p(95)<1000"], 
-  http_req_failed: ["rate<0.10"], 
+  http_req_duration: ["p(95)<1000"],
+  http_req_failed: ["rate<0.10"],
 };
 
 export function handleSummary(data) {
