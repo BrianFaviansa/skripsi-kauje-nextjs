@@ -33,6 +33,10 @@ export const OPTIONS = {
       { duration: "30s", target: 0 },
     ],
   },
+  load_file: {
+    vus: 10,
+    duration: "30s",
+  },
 };
 
 export const THRESHOLDS = {

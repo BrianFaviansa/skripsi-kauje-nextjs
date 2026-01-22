@@ -1,21 +1,24 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
-import { BASE_URL, TEST_USER, THRESHOLDS, handleSummary } from "./config.js";
+import {
+  BASE_URL,
+  TEST_USER,
+  THRESHOLDS,
+  handleSummary,
+  OPTIONS,
+} from "./config.js";
 
 export { handleSummary };
 
 export const options = {
-  stages: [
-    { duration: "30s", target: 50 },
-    { duration: "30s", target: 100 },
-    { duration: "1m", target: 100 },
-    { duration: "30s", target: 50 },
-    { duration: "30s", target: 0 },
-  ],
+  ...OPTIONS.load_file,
   thresholds: THRESHOLDS,
 };
 
-const testImageData = open("../image_upload_test/laravel_image.png", "b");
+const testImageData = open(
+  "../image_upload_test/1mb-jpg-example-file.jpg",
+  "b",
+);
 
 export function setup() {
   const loginRes = http.post(
@@ -50,10 +53,10 @@ export function setup() {
 export default function (data) {
   const timestamp = Date.now();
   const uniqueId = `${__VU}_${__ITER}_${timestamp}`;
-  const filename = `laravel_image_${uniqueId}.png`;
+  const filename = `3mb_image_${uniqueId}.jpg`;
 
   const formData = {
-    file: http.file(testImageData, filename, "image/png"),
+    file: http.file(testImageData, filename, "image/jpeg"),
   };
 
   const res = http.post(`${BASE_URL}/news/upload`, formData, {
@@ -88,5 +91,5 @@ export default function (data) {
 export function teardown() {
   console.log("News File Upload Load Test Completed");
   console.log("Configuration: 100 VUs, 3 minutes total duration");
-  console.log("Image source: image_upload_test/laravel_image.png");
+  console.log("Image source: image_upload_test/1mb-jpg-example-file.jpg");
 }
